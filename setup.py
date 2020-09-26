@@ -18,16 +18,16 @@ if sys.platform == 'darwin':
     extra_link_args=['-Wl,-install_name,@rpath/libabie'+suffix]
 
 module_abie = Extension('libabie',
-                        sources = ['ABIE/integrator_gauss_radau15.c',
-                            'ABIE/integrator_wisdom_holman.c',
-                            'ABIE/integrator_runge_kutta.c',
-                            'ABIE/common.c',
-                            'ABIE/additional_forces.c'],
-                        include_dirs = ['ABIE'],
-                        extra_compile_args=['-fstrict-aliasing', '-O3','-std=c99','-march=native','-fPIC', '-shared', '-fcommon'],
+                        sources = ['clib/integrator_gauss_radau15.c',
+                            'clib/integrator_wisdom_holman.c',
+                            'clib/integrator_runge_kutta.c',
+                            'clib/common.c',
+                            'clib/additional_forces.c'],
+                        include_dirs = ['clib'],
+                        extra_compile_args=['-fstrict-aliasing', '-O3','-std=c99','-march=native','-fPIC'],
                         extra_link_args=extra_link_args,
                         )
-
+#'-shared', '-fcommon'
 setup(name='astroabie',
       version='0.1',
       description='Alice-Bob Integrator Environment',
@@ -35,9 +35,10 @@ setup(name='astroabie',
       author='Maxwell Cai, Javier Roa, Adrian Hamers, Nathan Leigh',
       author_email='maxwellemail@gmail.com',
       license='BSD 2-Clause',
-      packages=find_packages(),
+      #packages=find_packages(),
+      packages=[ABIE],
       zip_safe=False,
-      install_requires=['toml', 'numpy', 'h5py'],
+      #install_requires=['toml', 'numpy', 'h5py'],
       entry_points={'console_scripts': ['abie = ABIE.abie:main'] },
       ext_modules = [module_abie]
       )

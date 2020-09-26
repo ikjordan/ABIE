@@ -11,11 +11,12 @@ class CLibABIE(object):
         lib_path = os.path.join(__current_dir__, 'libabie.so')
         if not os.path.isfile(lib_path):
             # try to find the library from the parent directory
-            lib_path = os.path.join(os.path.abspath(os.path.join(__current_dir__, os.pardir)), 'libabie.so')
+            parent_path = os.path.join(os.path.abspath(os.path.join(__current_dir__, os.pardir)), 'libabie.so')
 
-        if not os.path.isfile(lib_path):
-            print('Warning! Shared library libabie.so not exsit! Trying to compile.')
-            os.system('make')
+            if not os.path.isfile(parent_path):
+                print('Warning! Shared library libabie.so does not exist! Trying to compile.')
+                os.system('make  -C ../clib')
+            
         self.lib = ctypes.cdll.LoadLibrary(lib_path)
         self.max_close_encounter_events = 1
         self.max_collision_events = 1

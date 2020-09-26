@@ -2,7 +2,7 @@
 LONGDOUBLE = 0
 
 # Use CUDA/GPU to perform the calculation of acceleratoins
-GPU = 1
+GPU = 0
 
 # CUDA installation path
 CUDA_SDK_PATH=/usr/local/cuda
@@ -33,9 +33,12 @@ libabie.so: $(OBJS)
 ifeq ($(GPU), 1)
 	$(CC) -o $@ $(OBJS) $(CFLAGS) -shared -L${CUDA_SDK_PATH}/lib64 -I${CUDA_SDK_PATH}/include -lcudart -lstdc++
 	# rm *.o
+	mv libabie.so ../py
+	
 else
 	$(CC) -o $@ $(OBJS) $(CFLAGS) -shared 
-	rm *.o
+	#rm *.o
+	mv libabie.so ../ABIE
 endif
 
 gpuforce.o: gpuforce.cu
@@ -55,4 +58,4 @@ endif
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 clean:
-	rm *.o *.so *.pyc
+	rm *.o ../ABIE/libabie.so

@@ -4,6 +4,12 @@ Run ABIE programmatically as a library.
 try:
     from ABIE.abie import ABIE
 except ImportError:
+    # Try to run local module, by adding path
+    from sys import path
+    from os.path import dirname, join
+    from os.path import join
+
+    path.append(join(dirname(path[0]), "ABIE"))
     from abie import ABIE
 import numpy as np
 
