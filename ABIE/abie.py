@@ -13,8 +13,8 @@ import argparse
 import toml
 import numpy as np
 import sys
-from ABIE.data_io import DataIO
-from ABIE.integrator import Integrator
+from .data_io import DataIO
+from .integrator import Integrator
 
 
 class ABIE(object):

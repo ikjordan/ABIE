@@ -1,7 +1,7 @@
 import ctypes
 import os
 import numpy as np
-from ABIE.events import CollisionException, CloseEncounterException
+from .events import CollisionException, CloseEncounterException
 
 
 class CLibABIE(object):

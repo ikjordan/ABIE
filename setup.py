@@ -28,7 +28,7 @@ module_abie = Extension('libabie',
                         extra_link_args=extra_link_args,
                         )
 setup(name='astroabie',
-      version='0.1',
+      version='0.2',
       description='Alice-Bob Integrator Environment',
       url='https://github.com/maxwelltsai/MPA',
       author='Maxwell Cai, Javier Roa, Adrian Hamers, Nathan Leigh',

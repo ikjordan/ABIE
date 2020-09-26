@@ -14,13 +14,11 @@ import glob
 import os
 import sys
 import numpy as np
-from ABIE.particles import Particles
-from ABIE.clibabie import CLibABIE
-from ABIE.data_io import DataIO
+from .particles import Particles
+from .clibabie import CLibABIE
+from .data_io import DataIO
 
 __mpa_dir__ = os.path.dirname(os.path.abspath(__file__))
-__user_shell_dir__ = os.getcwd()
-
 
 class Integrator(object):
 
@@ -81,17 +79,11 @@ class Integrator(object):
         :return: a dict of integrator class objects, mapping the name of the integrator to the class object
         """
         mod_dict = dict()
+        
         module_candidates = glob.glob(os.path.join(__mpa_dir__, 'integrator_*.py'))
-        sys.path.append(__mpa_dir__)  # append the python path
-        if __mpa_dir__ != __user_shell_dir__:
-            # load the integrator module (if any) also from the current user shell directory
-            module_cwd = glob.glob(os.path.join(__user_shell_dir__, 'integrator_*.py'))
-            for m_cwd in module_cwd:
-                module_candidates.append(m_cwd)
-            sys.path.append(__user_shell_dir__)  # append the python path
         for mod_name in module_candidates:
             mod_name = os.path.basename(mod_name)
-            mod = __import__(mod_name.split('.')[0])
+            mod = __import__(__package__ + "." + mod_name.split('.')[0], fromlist=[mod_name.split('.')[0]])
             if hasattr(mod, '__integrator__'):
                 # it is a valid ABI module, register it as a module
                 mod_dict[mod.__integrator__] = mod

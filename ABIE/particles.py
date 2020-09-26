@@ -1,7 +1,7 @@
 import numpy as np
 from six import string_types
-from ABIE.particle import Particle
-from ABIE.tools import Tools
+from .particle import Particle
+from .tools import Tools
 
 
 class Particles(object):

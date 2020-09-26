@@ -2,15 +2,16 @@
 Run ABIE programmatically as a library.
 """
 try:
-    from ABIE.abie import ABIE
+    from ABIE import ABIE
 except ImportError:
-    # Try to run local module, by adding path
+    print("Failed")
+    # Try to run local module, by adding path to directory above 
+    # library code
     from sys import path
-    from os.path import dirname, join
-    from os.path import join
+    from os.path import dirname
 
-    path.append(join(dirname(path[0]), "ABIE"))
-    from abie import ABIE
+    path.append(dirname(path[0]))
+    from ABIE import ABIE
 import numpy as np
 
 # create an ABIE instance
