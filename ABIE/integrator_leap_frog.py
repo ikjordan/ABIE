@@ -1,6 +1,6 @@
-from integrator import Integrator
-from ode import ODE
 import numpy as np
+from ABIE.integrator import Integrator
+from ABIE.ode import ODE
 
 __integrator__ = 'LeapFrog'
 

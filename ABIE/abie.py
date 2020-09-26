@@ -11,10 +11,10 @@ The MPA team, 2017-2018
 """
 import argparse
 import toml
-from integrator import Integrator
 import numpy as np
 import sys
-from data_io import DataIO
+from ABIE.data_io import DataIO
+from ABIE.integrator import Integrator
 
 
 class ABIE(object):
