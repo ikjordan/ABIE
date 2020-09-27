@@ -20,9 +20,9 @@ size_t calculate_post_newtonian(const real pos[], const real vel[], size_t N, re
 
     real ax, ay, az;
 
-    real r[3], v[3];
+    // real r[3], v[3]; - Not used
 
-    real CONST_C_LIGHT_P2 = C * C; // CONST_C_LIGHT * CONST_C_LIGHT;
+    // real CONST_C_LIGHT_P2 = C * C; // CONST_C_LIGHT * CONST_C_LIGHT;
     real CONST_C_LIGHT_PM1 = 1.0 / C;
     real CONST_C_LIGHT_PM2 = CONST_C_LIGHT_PM1 * CONST_C_LIGHT_PM1;
     real CONST_C_LIGHT_PM4 = CONST_C_LIGHT_PM2 * CONST_C_LIGHT_PM2;

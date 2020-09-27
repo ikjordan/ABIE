@@ -1,6 +1,7 @@
 import ctypes
 import inspect
 import os
+import sys
 import platform
 import numpy as np
 from .events import CollisionException, CloseEncounterException
@@ -39,6 +40,9 @@ class CLibABIE(object):
                 if platform.system() != 'Windows':
                     print('Trying to compile.')
                     os.system('make  -C ../libabie')
+                else:
+                    print("Need to build libabie.dll manually")
+                    sys.exit(0)
 
         # Finally in a position to load the C library - will throw exception if fails
         self.lib = ctypes.cdll.LoadLibrary(lib_path)            

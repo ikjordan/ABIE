@@ -1,0 +1,55 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>aaf45b21-ff62-4a99-9129-f3e189835985</ProjectGuid>
+    <ProjectHome>.</ProjectHome>
+    <StartupFile>ABIE.py</StartupFile>
+    <SearchPath>
+    </SearchPath>
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <Name>ABIE</Name>
+    <RootNamespace>ABIE</RootNamespace>
+    <InterpreterId>Global|PythonCore|3.7-32</InterpreterId>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="ABIE.py" />
+    <Compile Include="clibabie.py" />
+    <Compile Include="data_io.py" />
+    <Compile Include="events.py" />
+    <Compile Include="integrator.py" />
+    <Compile Include="integrator_adams_bashforth.py" />
+    <Compile Include="integrator_euler.py" />
+    <Compile Include="integrator_gauss_radau15.py" />
+    <Compile Include="integrator_leap_frog.py" />
+    <Compile Include="integrator_runge_kutta.py" />
+    <Compile Include="integrator_wisdom_holman.py" />
+    <Compile Include="ode.py" />
+    <Compile Include="particle.py" />
+    <Compile Include="particles.py" />
+    <Compile Include="snapshot_serialization.py" />
+    <Compile Include="tools.py" />
+    <Compile Include="__init__.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <InterpreterReference Include="Global|PythonCore|3.7-32" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
+  <!-- Uncomment the CoreCompile target to enable the Build command in
+       Visual Studio and specify your pre- and post-build commands in
+       the BeforeBuild and AfterBuild targets below. -->
+  <!--<Target Name="CoreCompile" />-->
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+</Project>
