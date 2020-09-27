@@ -38,7 +38,7 @@ class CLibABIE(object):
                 print('Warning! Shared library {}{} does not exist!'.format(libroot, libext))
                 if platform.system() != 'Windows':
                     print('Trying to compile.')
-                    os.system('make  -C ../clib')
+                    os.system('make  -C ../libabie')
 
         # Finally in a position to load the C library - will throw exception if fails
         self.lib = ctypes.cdll.LoadLibrary(lib_path)            

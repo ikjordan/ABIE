@@ -10,20 +10,21 @@ suffix = sysconfig.get_config_var('EXT_SUFFIX')
 if suffix is None:
     suffix = ".so"
 
-extra_link_args=['-fcommon']
 if sys.platform == 'darwin':
     from distutils import sysconfig
     vars = sysconfig.get_config_vars()
     vars['LDSHARED'] = vars['LDSHARED'].replace('-bundle', '-shared')
-    extra_link_args=['-Wl,-install_name,@rpath/libabie'+suffix]
+    extra_link_args=['-Wl,-fcommon,-install_name,@rpath/libabie'+suffix]
+else:
+    extra_link_args=['-fcommon']
 
 module_abie = Extension('libabie',
-                        sources = ['clib/integrator_gauss_radau15.c',
-                            'clib/integrator_wisdom_holman.c',
-                            'clib/integrator_runge_kutta.c',
-                            'clib/common.c',
-                            'clib/additional_forces.c'],
-                        include_dirs = ['clib'],
+                        sources = ['libabie/integrator_gauss_radau15.c',
+                            'libabie/integrator_wisdom_holman.c',
+                            'libabie/integrator_runge_kutta.c',
+                            'libabie/common.c',
+                            'libabie/additional_forces.c'],
+                        include_dirs = ['libabie'],
                         extra_compile_args=['-fstrict-aliasing', '-O3','-std=c99','-march=native','-fPIC', '-shared', '-fcommon'],
                         extra_link_args=extra_link_args,
                         )
