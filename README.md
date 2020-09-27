@@ -11,18 +11,18 @@ from Python programatically
 5. Get the CUDA code working under Windows
 
 ## Notes
-a. ABIE uses C Variable Length Arrays (VLA), which are not supported by the MSVC compiler (MSVC is not
+1. ABIE uses C Variable Length Arrays (VLA), which are not supported by the MSVC compiler (MSVC is not
 completely C99 compliant). Therefore the LLVM (`Clang-cl`) tool chain is used with Visual Studio 2019
-b. The code has been tested under MS Windows 10, Ubuntu 20.04 running in a VirtualBox VM and a 4MB Raspberry PI 4 
+2. The code has been tested under MS Windows 10, Ubuntu 20.04 running in a VirtualBox VM and a 4MB Raspberry PI 4 
 running Raspberry Pi OS
-c. I do not have acccess to an Apple Mac, so I may have inadvertantly broken support for that platform
-d. To make intellisense work correctly for C99 code with `Clang` an additional option of `-std=c99` is set. This is valid in
+3. I do not have acccess to an Apple Mac, so I may have inadvertantly broken support for that platform
+4. To make intellisense work correctly for C99 code with `Clang` an additional option of `-std=c99` is set. This is valid in
 `Clang`, and triggers intellisense to work correctly, but is ignored in `Clang-cl`, and so causes a 
 warning to be generated
-e. The C files in the project are built into a DLL. I failed to configure `setup.py` to automatically 
+5. The C files in the project are built into a DLL. I failed to configure `setup.py` to automatically 
 trigger a build using `Clang`, so before running `setup.py` `libabie.dll` should be built in Visual Studio.
 The DLL will then be packaged correctly
-f. Note that there appears to be an issue in on the Pi, where specifying dependencies can cause 
+6. Note that there appears to be an issue in on the Pi, where specifying dependencies can cause 
 `Cython` to fail. The workaround is to comment the dependencies out from `setup.py` and install them
 manually
 
