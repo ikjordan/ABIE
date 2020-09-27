@@ -1,3 +1,41 @@
+# Fork of Moving Planets Around (MPA) Project
+*Moving Planets Around* is a great resource for n-body simulation.  
+This fork aims to build 
+on the official code repository. It is work in progress, but the intent is to:
+
+1. Address some issues I found with Python package management
+2. Add support for MS Windows
+3. Make changes to `snapshot_serialization.py` to support windows, and allow it to be called 
+from Python programatically
+4. Add extra example files
+5. Get the CUDA code working under Windows
+
+## Notes
+a. ABIE uses C Variable Length Arrays (VLA), which are not supported by the MSVC compiler (MSVC is not
+completely C99 compliant). Therefore the LLVM (`Clang-cl`) tool chain is used with Visual Studio 2019
+b. The code has been tested under MS Windows 10, Ubuntu 20.04 running in a VirtualBox VM and a 4MB Raspberry PI 4 
+running Raspberry Pi OS
+c. I do not have acccess to an Apple Mac, so I may have inadvertantly broken support for that platform
+d. To make intellisense work correctly for C99 code with `Clang` an additional option of `-std=c99` is set. This is valid in
+`Clang`, and triggers intellisense to work correctly, but is ignored in `Clang-cl`, and so causes a 
+warning to be generated
+e. The C files in the project are built into a DLL. I failed to configure `setup.py` to automatically 
+trigger a build using `Clang`, so before running `setup.py` `libabie.dll` should be built in Visual Studio.
+The DLL will then be packaged correctly
+f. Note that there appears to be an issue in on the Pi, where specifying dependencies can cause 
+`Cython` to fail. The workaround is to comment the dependencies out from `setup.py` and install them
+manually
+
+## Examples
+The example files will use the `astroabie` package, if it is installed. Otherwise it will fall back to
+use the local `ABIE` module files
+
+
+### `run.py`
+The original example supplied in the base repository, extended to use `Matplotlib` to plot the results in 3d
+
+### The original README follows:
+
 # Moving Planets Around (MPA) Project
 
 *Moving Planets Around* is an education book project that teaches students to build a state-of-the-art N-Body code for planetary system dynamics from the stretch. The code built throughout the storyline of the book is hosted here. The book will be published by the MIT Press around September 2020. Stay tuned! See: https://mitpress.mit.edu/books/moving-planets-around 
