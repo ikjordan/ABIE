@@ -112,34 +112,36 @@ def execute_simulation(output_file):
 def display_data(input_file):
     # flatten the data
     from ABIE import snapshot_convert
-    snapshot_convert(input_file)
+    converted = snapshot_convert(input_file)
 
-    import h5py
-    h5f = h5py.File(input_file, 'r')
+    if converted:
+        import h5py
+        h5f = h5py.File(converted[0], 'r')
 
-    x = h5f['/x'][()]     # Get x for the particles
-    y = h5f['/y'][()]     # Get y for the particles
-    z = h5f['/y'][()]     # Get z for the particles
+        x = h5f['/x'][()]     # Get x for the particles
+        y = h5f['/y'][()]     # Get y for the particles
+        z = h5f['/y'][()]     # Get z for the particles
 
-    num_samples = len(x)
-    num_bodies  = len(x[0])
+        num_samples = len(x)
+        num_bodies  = len(x[0])
 
-    import matplotlib.pyplot as plt
-    fig = plt.figure()
-    ax = fig.gca(projection='3d')
-    ax.set_title('Trajectory')
+        import matplotlib.pyplot as plt
+        from mpl_toolkits.mplot3d import Axes3D
+        fig = plt.figure()
+        ax = fig.gca(projection='3d')
+        ax.set_title('Trajectory')
 
-    # Plot all the x positions for first object against the y positions
-    ax.plot(x[:,0], y[:,0], z[:,0], "b-") 
-    ax.plot(x[:,1], y[:,1], z[:,1], "g-") 
-    ax.plot(x[:,2], y[:,2], z[:,2], "r-") 
+        # Plot all the x positions for first object against the y positions
+        ax.plot(x[:,0], y[:,0], z[:,0], "b-") 
+        ax.plot(x[:,1], y[:,1], z[:,1], "g-") 
+        ax.plot(x[:,2], y[:,2], z[:,2], "r-") 
 
-    if num_bodies > 3:
-        ax.plot(x[:,3], y[:,3], z[:,3], "k-") 
+        if num_bodies > 3:
+            ax.plot(x[:,3], y[:,3], z[:,3], "k-") 
 
-    plt.show()
+        plt.show()
 
-    h5f.close()
+        h5f.close()
 
 
 if __name__ == "__main__":

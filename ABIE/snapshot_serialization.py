@@ -25,6 +25,7 @@ def main():
 def snapshot_convert(file, dataset=None):
     # Find all files matching the data
     h5fns = glob.glob(file)
+    converted = []
     print(h5fns)
     if len(h5fns) > 0:
         for h5fn_id, h5fn in enumerate(h5fns):
@@ -32,12 +33,14 @@ def snapshot_convert(file, dataset=None):
             
             # Handle temp files differently in Windows
             if platform.system() == 'Windows':
-                output_file_name = h5fn
+                output_file_name = os.path.splitext(os.path.basename(h5fn))[0]
                 new_file_path = h5fn + "_tmp"
             else:
                 # temporarily copying the .unfinished file to /tmp
                 output_file_name = os.path.splitext(os.path.basename(h5fn))[0]
                 new_file_path = os.path.join('/tmp', os.path.basename(h5fn))
+                print(new_file_path)
+                print(output_file_name)
 
             shutil.copyfile(h5fn, new_file_path)
             with h5py.File(new_file_path, 'r') as h5f, h5py.File(output_file_name, 'w') as h5f_out:
@@ -102,7 +105,9 @@ def snapshot_convert(file, dataset=None):
                             h5f_out.create_dataset(dset_name, data=dset_dict[dset_name], dtype=np.int64)
                         else:
                             h5f_out.create_dataset(dset_name, data=dset_dict[dset_name])
+            converted.append(output_file_name)
             os.remove(new_file_path)
+    return converted
 
 if __name__ == "__main__":
     main()
