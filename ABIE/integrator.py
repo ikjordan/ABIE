@@ -10,6 +10,7 @@ Features:
 The MPA team, 2017-2018
 """
 
+import inspect
 import glob
 import os
 import sys
@@ -17,8 +18,6 @@ import numpy as np
 from .particles import Particles
 from .clibabie import CLibABIE
 from .data_io import DataIO
-
-__mpa_dir__ = os.path.dirname(os.path.abspath(__file__))
 
 class Integrator(object):
 
@@ -80,12 +79,17 @@ class Integrator(object):
         """
         mod_dict = dict()
         
-        module_candidates = glob.glob(os.path.join(__mpa_dir__, 'integrator_*.py'))
+        # Get the path to this file, works even if __file__ not defined
+        filename = inspect.getframeinfo(inspect.currentframe()).filename
+        path = os.path.dirname(os.path.abspath(filename))
+
+        # Find all possible candidate files and check each one
+        module_candidates = glob.glob(os.path.join(path, 'integrator_*.py'))
         for mod_name in module_candidates:
             mod_name = os.path.basename(mod_name)
             mod = __import__(__package__ + "." + mod_name.split('.')[0], fromlist=[mod_name.split('.')[0]])
             if hasattr(mod, '__integrator__'):
-                # it is a valid ABI module, register it as a module
+                # it is a valid ABI integrator file, register it as a integrator
                 mod_dict[mod.__integrator__] = mod
         return mod_dict
 

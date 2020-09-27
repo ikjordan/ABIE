@@ -1,5 +1,7 @@
 import ctypes
+import inspect
 import os
+import platform
 import numpy as np
 from .events import CollisionException, CloseEncounterException
 
@@ -7,29 +9,39 @@ from .events import CollisionException, CloseEncounterException
 class CLibABIE(object):
 
     def __init__(self):
-        # The case when a package is not installed
-        __current_dir__ = os.path.dirname(os.path.realpath(__file__))
-        lib_path = os.path.join(__current_dir__, 'libabie.so')
+        # Get the path to this file, works even if __file__ not defined
+        filename = inspect.getframeinfo(inspect.currentframe()).filename
+        path = os.path.dirname(os.path.abspath(filename))
+        
+        # Get the library extension
+        if platform.system() == 'Windows':
+            libext = '.dll'
+        else:
+            libext = '.so'
+        libroot = 'libabie'
+        
+        lib_path = os.path.join(path, libroot + libext)
         if not os.path.isfile(lib_path):
-            # try to find the library from the parent directory
-            # This is a horrible hack - it works, but there must be a better way!
-            parent_path = os.path.abspath(os.path.join(__current_dir__, os.pardir))
+            # try to find the library in the parent directory
+            parent_path = os.path.abspath(os.path.join(path, os.pardir))
             
-            found = False
+            # Have to allow for the case where the library has build 
+            # information added to its name. 
+            # This feels like a hack, but do not know a better way
             for i in os.listdir(parent_path):
-                print(i)
-                if os.path.isfile(os.path.join(parent_path,i)) and 'libabie' in i and '.so' in i:
+                if os.path.isfile(os.path.join(parent_path,i)) and libroot in i and libext in i:
                     lib_path = os.path.join(parent_path, i)
-                    found = True
                     break
 
-            # Assume the package is not installed, so try to compile the C library
-            if not found:        
-                print('Warning! Shared library libabie.so does not exist! Trying to compile.')
-                os.system('make  -C ../clib')
-                
-        # Finally in a position to load the C library
-        self.lib = ctypes.cdll.LoadLibrary(lib_path)
+            if not os.path.isfile(lib_path):
+                # Still cannot find it, so try to compile the C library
+                print('Warning! Shared library {}{} does not exist!'.format(libroot, libext))
+                if platform.system() != 'Windows':
+                    print('Trying to compile.')
+                    os.system('make  -C ../clib')
+
+        # Finally in a position to load the C library - will throw exception if fails
+        self.lib = ctypes.cdll.LoadLibrary(lib_path)            
         self.max_close_encounter_events = 1
         self.max_collision_events = 1
 
