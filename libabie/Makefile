@@ -7,37 +7,33 @@ GPU = 0
 # CUDA installation path
 CUDA_SDK_PATH=/usr/local/cuda
 
-# Determine whether on minGW
-ifeq ($(OS),Windows_NT)
-	FINALTARGET = libabie.dll
-else
-	FINALTARGET = libabie.so
-endif
+CFLAGS += -fPIC -O3 -std=c99 -g -fcommon -fstrict-aliasing -shared
+
+OBJS = common.o integrator_runge_kutta.o integrator_gauss_radau15.o integrator_wisdom_holman.o additional_forces.o
 
 ifeq ($(GPU), 1)
-	OBJS = common.o integrator_runge_kutta.o integrator_gauss_radau15.o integrator_wisdom_holman.o additional_forces.o gpuforce.o bodysystemcuda.o
+	OBJS += gpuforce.o bodysystemcuda.o
 	CFLAGS += -DGPU
-else
-	OBJS = common.o integrator_runge_kutta.o integrator_gauss_radau15.o integrator_wisdom_holman.o additional_forces.o
 endif
 
 DEPS = common.h
 
-CFLAGS += -fPIC -O3 -std=c99 -g -fcommon -fstrict-aliasing -shared
-
 ifeq ($(LONGDOUBLE), 1)
 	CFLAGS += -DLONGDOUBLE
-endif
-
-# Build for 64 bits on MinGW
-ifeq ($(OS),Windows_NT)
-	CFLAGS += -DWIN32 -DLIBABIE_EXPORTS -m64 
 endif
 
 ifeq ($(GPU), 1)
 	NVCC = nvcc
 else
 	NVCC = $(CC)
+endif
+
+# Determine whether on minGW
+ifeq ($(OS),Windows_NT)
+	FINALTARGET = libabie.dll
+	CFLAGS += -DWIN32 -DLIBABIE_EXPORTS -m64
+else
+	FINALTARGET = libabie.so
 endif
 
 libabie.so: $(OBJS)

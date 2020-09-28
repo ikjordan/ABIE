@@ -246,7 +246,7 @@ class Particles(object):
             if item < len(self.__particles):
                 return self.__particles[item]
             else:
-                raise ValueError('Particle #%d does not exist!' % item)
+                raise IndexError('Particle #%d does not exist!' % item)
         elif isinstance(item, string_types):
             if item in self.__names:
                 return self.__particles[self.__names[item]]

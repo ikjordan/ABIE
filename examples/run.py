@@ -14,9 +14,11 @@ except ImportError:
     path.append(dirname(path[0]))
     from ABIE import ABIE
 
+from display import display_3d_data
+
 def main():
-    execute_simulation('abc.h5')
-    display_data('abc.h5')
+    names = execute_simulation('abc.h5')
+    display_3d_data('abc.h5', names)
 
 def execute_simulation(output_file):
     # create an ABIE instance
@@ -81,6 +83,12 @@ def execute_simulation(output_file):
     sim.collision_output_file = 'abc.collisions.txt'
     sim.close_encounter_output_file = 'abc.ce.txt'
 
+    # Build a dictionary mapping hashes to names
+    hash2names = {}
+    for particle in sim.particles:
+        if particle.name is not None:
+            hash2names[particle.hash] = particle.name
+
     # The output frequency
     sim.store_dt = 0.1
 
@@ -105,44 +113,11 @@ def execute_simulation(output_file):
     sim.initialize()
 
     # perform the integration
-    sim.integrate(30)  # the argument `2000` is optional if `sim.t_end` is specified in the context
+    sim.integrate(30)  # the argument `30` is optional if `sim.t_end` is specified in the context
 
     sim.stop()
 
-def display_data(input_file):
-    # flatten the data
-    from ABIE import snapshot_convert
-    converted = snapshot_convert(input_file)
-
-    if converted:
-        import h5py
-        h5f = h5py.File(converted[0], 'r')
-
-        x = h5f['/x'][()]     # Get x for the particles
-        y = h5f['/y'][()]     # Get y for the particles
-        z = h5f['/y'][()]     # Get z for the particles
-
-        num_samples = len(x)
-        num_bodies  = len(x[0])
-
-        import matplotlib.pyplot as plt
-        from mpl_toolkits.mplot3d import Axes3D
-        fig = plt.figure()
-        ax = fig.gca(projection='3d')
-        ax.set_title('Trajectory')
-
-        # Plot all the x positions for first object against the y positions
-        ax.plot(x[:,0], y[:,0], z[:,0], "b-") 
-        ax.plot(x[:,1], y[:,1], z[:,1], "g-") 
-        ax.plot(x[:,2], y[:,2], z[:,2], "r-") 
-
-        if num_bodies > 3:
-            ax.plot(x[:,3], y[:,3], z[:,3], "k-") 
-
-        plt.show()
-
-        h5f.close()
-
+    return hash2names
 
 if __name__ == "__main__":
     main()
