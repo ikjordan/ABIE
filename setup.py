@@ -16,8 +16,6 @@ if sys.platform == 'darwin':
     vars = sysconfig.get_config_vars()
     vars['LDSHARED'] = vars['LDSHARED'].replace('-bundle', '-shared')
     extra_link_args=['-Wl,-fcommon,-install_name,@rpath/libabie'+suffix]
-else:
-    extra_link_args=['-fcommon']
 
 if platform.system() != 'Windows':
     module_abie = Extension('libabie',
