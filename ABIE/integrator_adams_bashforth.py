@@ -15,6 +15,8 @@ class AdamsBashforth(Integrator):
         if self.__initialized is False:
             self.initialize()
             self.__initialized = True
+        if to_time is not None:
+            self.t_end = to_time
         # Allocate dense output
         npts = int(np.floor((self.t_end - self.t_start) / self.h) + 1)
 

@@ -391,8 +391,6 @@ class GaussRadau15(Integrator):
         c = self.__compute_cs()
 
         integrate = True
-        if to_time is not None:
-            self.t_end = to_time
         imode = 0
         energy_init = self.calculate_energy()
         while integrate:
@@ -423,6 +421,6 @@ class GaussRadau15(Integrator):
             self.particles.velocities = dy
             self.store_state()
             energy = self.calculate_energy()
-            # print('t = %f, E/E0 = %g' % (self.t, np.abs(energy-energy_init)/energy_init))
+            #print('t = %f, E/E0 = %g' % (self.t, np.abs(energy-energy_init)/energy_init))
         self.buf.close()
         return 0

@@ -157,7 +157,8 @@ class Integrator(object):
         while self.t < self.t_end:
             if self.__energy_init == 0:
                 self.__energy_init = self.calculate_energy()
-            next_t = self.t + dt - ((self.t + dt) % dt)
+            #next_t = self.t + dt - ((self.t + dt) % dt)
+            next_t = self.t + dt
             if self.acceleration_method == 'numpy':
                 ret = self.integrate_numpy(next_t)
             elif self.acceleration_method == 'ctypes':

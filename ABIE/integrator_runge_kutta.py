@@ -21,16 +21,13 @@ class RungeKutta(Integrator):
     def integrate_ctypes(self, to_time=None):
         energy_init = self.calculate_energy()
         dt = min(self.store_dt, self.t_end-self.t)
-        self.libabie.initialize_code(self.CONST_G, self.particles.N)
+        self.libabie.initialize_code(self.CONST_G, self.CONST_C, self.particles.N)
         pos = self.particles.positions.copy()
         vel = self.particles.velocities.copy()
-        self.libabie.set_state(pos, vel, self.particles.masses, self.particles.radii, self.particles.N, self.CONST_G)
+        self.libabie.set_state(pos, vel, self.particles.masses, self.particles.radii, self.particles.N, self.CONST_G, self.CONST_C)
         energy = self.calculate_energy()
         print(('t = %f, E/E0 = %g' % (self.t, np.abs(energy-energy_init)/energy_init)))
         self.store_state()
-        if to_time is not None:
-            self.t_end = to_time
-
 
         if self.h == 0.0:
             print('ERROR: the timestep for RungeKutta is not set!!! Exiting...')
@@ -96,8 +93,6 @@ class RungeKutta(Integrator):
         #     count += 1
 
     def integrate_numpy(self, to_time=None):
-        if to_time is not None:
-            self.t_end = to_time
         # Allocate dense output
         npts = int(np.floor((self.t_end - self.t_start) / self.h) + 1)
 
