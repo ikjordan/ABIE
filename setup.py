@@ -16,6 +16,8 @@ if sys.platform == 'darwin':
     vars = sysconfig.get_config_vars()
     vars['LDSHARED'] = vars['LDSHARED'].replace('-bundle', '-shared')
     extra_link_args=['-Wl,-fcommon,-install_name,@rpath/libabie'+suffix]
+else:
+    extra_link_args=[]
 
 if platform.system() != 'Windows':
     module_abie = Extension('libabie',
@@ -54,7 +56,6 @@ else:
           author_email='maxwellemail@gmail.com',
           license='BSD 2-Clause',
           packages=find_packages(),
-#          packages=['ABIE'],
           zip_safe=False,
           install_requires=['toml', 'numpy', 'h5py'],
           entry_points={'console_scripts': ['abie = ABIE.abie:main'] },
