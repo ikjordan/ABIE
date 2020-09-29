@@ -155,7 +155,7 @@ class DataIO(object):
             self.buf_state[self.buf_cursor:self.buf_cursor+buf_len] = buf_state[:buf_len]
             self.buf_cursor += buf_len
         else:
-            # full the buffer until it is full, leave the remaining part for the next output
+            # fill the buffer until it is full, leave the remaining part for the next output
             remaining_buf_len = self.buf_cursor - self.buf_cursor
             self.buf_t[self.buf_cursor:self.buf_len] = buf_t[:remaining_buf_len]
             self.buf_state[self.buf_cursor:self.buf_len] = buf_state[:remaining_buf_len]

@@ -392,6 +392,7 @@ class GaussRadau15(Integrator):
 
         integrate = True
         imode = 0
+        step = 0
         energy_init = self.calculate_energy()
         while integrate:
             # if self.t + self.h > self.t_end:
@@ -408,6 +409,7 @@ class GaussRadau15(Integrator):
                                                                                           self._particles.masses,
                                                                                           self.particles.N)
 
+            step += 1
             # Detect end of integration:
             if istat == 2:
                 integrate = False
@@ -420,7 +422,11 @@ class GaussRadau15(Integrator):
             self.particles.positions = y
             self.particles.velocities = dy
             self.store_state()
-            energy = self.calculate_energy()
-            #print('t = %f, E/E0 = %g' % (self.t, np.abs(energy-energy_init)/energy_init))
+
+            # Feedback at the requested rate
+            if step % self.write_update == 0:
+                energy = self.calculate_energy()
+                print('t = %f, E/E0 = %g' % (self.t, np.abs(energy-energy_init)/energy_init))
+                step = 0
         self.buf.close()
         return 0

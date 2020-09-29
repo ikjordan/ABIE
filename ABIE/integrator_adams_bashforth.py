@@ -43,7 +43,12 @@ class AdamsBashforth(Integrator):
             count += 1
             self._t = t
             self.store_state()
-            energy = self.calculate_energy()
-            print(('t = %f, E/E0 = %g' % (self.t, np.abs(energy - energy_init) / energy_init)))
+            if (count - 1) % self.write_update == 0:
+                energy = self.calculate_energy()
+                print(('t = %f, E/E0 = %g' % (self.t, np.abs(energy - energy_init) / energy_init)))
         self.buf.close()
         return 0
+
+    def calculate_energy(self):
+        # To avoid going to the base class implementation, which assumes a ctypes version may be available
+        return self._particles.energy
