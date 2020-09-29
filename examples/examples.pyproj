@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>96059b33-b61a-4c19-98a6-718beb5cdc78</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>simple.py</StartupFile>
+    <StartupFile>solar.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -25,6 +25,7 @@
     <Compile Include="display.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="run.py" />
     <Compile Include="simple.py" />
     <Compile Include="solar.py" />
   </ItemGroup>

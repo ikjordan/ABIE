@@ -5,39 +5,45 @@ I found reading *Moving Planets Around* to be a great way to increase my knowled
 This fork aims to build 
 on the official code repository for the book. It is work in progress, but the intent is to:
 
-1. Address some issues I found with Python package management *done*
-2. Add support for MS Windows, using Microsoft Visual Studio Community 2019 
+1. Address issues in some of the integrators that prevented them running. *done*
+2. Address some issues I found with Python package management *done*
+3. Add support for MS Windows, using Microsoft Visual Studio Community 2019 
 (free to non-commercial users) *done*
-3. Support MS Windows builds using gcc under msys2 (minGW 64 bit) *done*
-4. Make changes to `snapshot_serialization.py` to support windows, and allow it to be called 
-from Python programatically *done*
+4. Support MS Windows builds using gcc under msys2 (minGW 64 bit) *done*
 5. Add extra example files *in progress*
 6. Get the CUDA code working under Windows *to do*
+7. Make changes to `snapshot_serialization.py` to support windows, and allow it to be called 
+from Python programatically *done*
 
 ## Notes
-1. The package configuration has been modified, so that code can be called in the same way, regardless
+1. It appears that major changes were made to the code to introduce the accelerated C integrators. This broke
+some of the older integrator inplementations in Python. These issues have now been addressed, and
+all integrators should now work in `numpy` mode
+2. Addressed issues with timestep and energy delta calculations in the `Wisdom Holman` integrator
+3. The package configuration has been modified, so that code can be called in the same way, regardless
 of whether the `astroabie` package has been installed. Examples have been moved into a separate
 directory
-2. Loading the shared library from the installed package has been refined, to allow for instances where
+4. Added an option to control the amount of data written to the console during a run
+5. Loading the shared library from the installed package has been refined, to allow for instances where
 the library name is decorated by the architecture during installation
-3. A MS Visual Studio 2019 solution is provided. This creates a DLL file from the C code, and allows easy 
+6. A MS Visual Studio 2019 solution is provided. This creates a DLL file from the C code, and allows easy 
 access to the debugger for both the Python and C code 
-4. ABIE uses C Variable Length Arrays (VLA), which are not supported by the MSVC compiler (MSVC is not
+7. ABIE uses C Variable Length Arrays (VLA), which are not supported by the MSVC compiler (MSVC is not
 completely C99 compliant). Therefore the LLVM (`Clang-cl`) tool chain is used with Visual Studio 2019
-5. The code has been tested under MS Windows 10, MinGW 64-bit running on Windows 10, Ubuntu 20.04 running in a VirtualBox VM and a 4MB Raspberry PI 4 
+8. The code has been tested under MS Windows 10, MinGW 64-bit running on Windows 10, Ubuntu 20.04 running in a VirtualBox VM and a 4MB Raspberry PI 4 
 running Raspberry Pi OS
-6. I do not have acccess to an Apple Mac, so I may have inadvertantly broken support for that platform
-7. To make intellisense work correctly for C99 code with `Clang` an additional option of `-std=c99` is set. This is valid in
+9. I do not have acccess to an Apple Mac, so I may have inadvertantly broken support for that platform
+10. To make intellisense work correctly for C99 code with `Clang` an additional option of `-std=c99` is set. This is valid in
 `Clang`, and triggers intellisense to work correctly, but is ignored in `Clang-cl`, and so causes a 
 warning to be generated
-8. Clang supports 80 bit `long double`, but in Clang-cl `long double` is set to 64 bits for 
-compatibility with MSVC. Use MinGW64 to get 80 bit `long double` under Windows
-9. The C files in the project are built into a DLL. I failed to configure `setup.py` to automatically 
+11. Clang supports 80 bit `long double`, but in Clang-cl `long double` is set to 64 bits for 
+compatibility with MSVC. Use MinGW64 to build a DLL that will provide 80 bit `long double` support under Windows
+12. The C files in the project are built into a DLL. I failed to configure `setup.py` to automatically 
 trigger a build using `Clang`, so before running `setup.py` `libabie.dll` should be built in Visual Studio.
 The DLL will then be packaged correctly
-10. Under MinGW 64bit the DLL (`libabie.dll`) can be built by invoking `make`. This should be done before 
+13. Under MinGW 64bit the DLL (`libabie.dll`) can be built by invoking `make`. This should be done before 
 running `setup.py`. The DLL will then be packaged correctly
-11. Note that there appears to be an issue in on the Raspberry Pi, where specifying dependencies can cause 
+14. Note that there appears to be an issue in on the Raspberry Pi, where specifying dependencies can cause 
 `Cython` to fail. The workaround is to comment the dependencies out from `setup.py` and install them
 manually
 
@@ -85,6 +91,17 @@ use the local `ABIE` module files
 ### `run.py`
 The original example supplied in the base repository, extended to call a modified
 `snapshot_serialization.py` to convert the `h5` data file and then use `Matplotlib` to plot the results in 3d
+
+### `simple.py`
+Two simple 3 body cases, which become unstable over time. These were originally described in the original *Moving Stars Around* website 
+at:  
+http://www.artcompsci.org/msa/web/vol_1/v1_web/v1_web.html  
+
+Uses `Matplotlib` to plot the results in 2d
+
+### `solar.py`
+Uses the solar system position and velocity information provided in *Moving Planets Around* to simulate the solar system. Uses `Matplotlib` to plot the results in 2d
+
 
 ### The original README follows:
 

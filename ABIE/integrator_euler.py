@@ -39,7 +39,7 @@ class Euler(Integrator):
             count += 1
             self._t = t
             self.store_state()
-            if count % self.write_update == 0:
+            if (count - 1) % self.write_update == 0:
                 energy = self.calculate_energy()
                 print(('t = %f, E/E0 = %g' % (self.t, np.abs(energy - energy_init) / energy_init)))
         self.buf.close()

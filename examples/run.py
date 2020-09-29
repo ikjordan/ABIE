@@ -5,7 +5,7 @@ import numpy as np
 try:
     from ABIE import ABIE
 except ImportError:
-    print("Failed")
+    print("astroabie package not installed, falling back to local")
     # Try to run local module, by adding path to directory above 
     # library code
     from sys import path
@@ -17,17 +17,20 @@ except ImportError:
 from display import display_3d_data
 
 def main():
-    names = execute_simulation('abc.h5')
-    display_3d_data('abc.h5', names)
+    execute_simulation('abc.h5')
 
 def execute_simulation(output_file):
     # create an ABIE instance
     sim = ABIE()
 
     # Select integrator. Possible choices are 'GaussRadau15', 'RungeKutta', etc.
-    # sim.integrator = 'WisdomHolman'
-    sim.integrator = 'GaussRadau15'
-    # sim.integrator = 'RungeKutta'
+    # integrator = 'Euler'
+    # integrator =  'LeapFrog'
+    # integrator = 'AdamsBashforth'
+    # integrator =  'RungeKutta'
+    # integrator = 'WisdomHolman'
+    integrator = 'GaussRadau15'
+    sim.integrator = integrator
 
     # Use the CONST_G parameter to set units
     sim.CONST_G = 4 * np.pi ** 2
@@ -117,7 +120,7 @@ def execute_simulation(output_file):
 
     sim.stop()
 
-    return hash2names
+    display_3d_data('abc.h5', hash2names=hash2names, title=integrator)
 
 if __name__ == "__main__":
     main()

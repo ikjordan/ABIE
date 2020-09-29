@@ -42,7 +42,7 @@ class LeapFrog(Integrator):
             self.particles.velocities = x[self.particles.N * 3:]
             self._t = t
             self.store_state()
-            if (count - 1) % self.write_update == 0:
+            if count % self.write_update == 0:
                 energy = self.calculate_energy()
                 print(('t = %f, E/E0 = %g' % (self.t, np.abs(energy - energy_init) / energy_init)))
             count += 1

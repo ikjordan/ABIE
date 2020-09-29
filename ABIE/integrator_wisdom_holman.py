@@ -19,8 +19,9 @@ class WisdomHolman(Integrator):
         vel = helio[3*self.particles.N:].copy()
         self.libabie.set_state(pos, vel, self.particles.masses, self.particles.radii, self.particles.N,
                                self.CONST_G, self.CONST_C)
-        self.__energy_init = self.calculate_energy()
 
+        # Call the base method, as particle positions and velocities are not stored in self.particles
+        self.energy_init = WisdomHolman.compute_energy(helio, self.particles.masses, self.particles.N, self.CONST_G)
 
     def integrate_ctypes(self, to_time=None):
         ret = 0

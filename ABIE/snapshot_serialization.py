@@ -26,7 +26,7 @@ def snapshot_convert(file, dataset=None):
     # Find all files matching the data
     h5fns = glob.glob(file)
     converted = []
-    print(h5fns)
+    #print(h5fns)
     if len(h5fns) > 0:
         for h5fn_id, h5fn in enumerate(h5fns):
             print(('Processing %s' % h5fn))
@@ -39,8 +39,6 @@ def snapshot_convert(file, dataset=None):
                 # temporarily copying the .unfinished file to /tmp
                 output_file_name = os.path.splitext(os.path.basename(h5fn))[0]
                 new_file_path = os.path.join('/tmp', os.path.basename(h5fn))
-                print(new_file_path)
-                print(output_file_name)
 
             shutil.copyfile(h5fn, new_file_path)
             with h5py.File(new_file_path, 'r') as h5f, h5py.File(output_file_name, 'w') as h5f_out:
@@ -52,7 +50,7 @@ def snapshot_convert(file, dataset=None):
                         vec_hash = h5f['/Step#1/hash'][()][0]  # the hash array of the first step (which contains all particles)
                     #print('vec_hash', vec_hash.shape)
                 dset_dict = dict()
-                print('Mapping internal data structure...')
+                #print('Mapping internal data structure...')
                 for dset_name in h5f:
                     if 'Step#' in dset_name:
                         step_id = int(dset_name.split('#')[1])
@@ -66,7 +64,7 @@ def snapshot_convert(file, dataset=None):
                     cursor = 0
                     for step_id in sorted(step_id_list):
                         step_name = 'Step#%d' % step_id
-                        print(step_name)
+                        #print(step_name)
                         h5g = h5f[step_name]
                         if len(h5g['hash'][()])  == 0:
                             continue
@@ -78,11 +76,11 @@ def snapshot_convert(file, dataset=None):
                             dset_list = h5g.keys()
 
                         for dset_name in dset_list:
-                            print(dset_name)
+                            #print(dset_name)
                             tmp_data = h5g[dset_name][()]
                             lower_idx = cursor
                             higher_idx = cursor + tmp_data.shape[0]
-                            print('cursors', lower_idx, higher_idx, cursor, step_len_vec[step_id])
+                            #print('cursors', lower_idx, higher_idx, cursor, step_len_vec[step_id])
                             if dset_name not in dset_dict.keys():
                                 # allocate memory
                                 if tmp_data.ndim == 2:
@@ -92,8 +90,8 @@ def snapshot_convert(file, dataset=None):
                             # append the data to the allocated big array
                             # dset_dict[dset_name][step_id*tmp_data.shape[0]:(step_id+1)*tmp_data.shape[0]][indices] = tmp_data
                             if tmp_data.ndim == 2:
-                                print(dset_name, tmp_data.shape, dset_dict[dset_name][lower_idx:higher_idx].shape)
-                                print(indices, vec_hash.shape)
+                                #print(dset_name, tmp_data.shape, dset_dict[dset_name][lower_idx:higher_idx].shape)
+                                #print(indices, vec_hash.shape)
                                 dset_dict[dset_name][lower_idx:higher_idx, :][:, indices] = tmp_data
                             else:
                                 # print dset_name, tmp_data.shape, dset_dict[dset_name][lower_idx:higher_idx].shape

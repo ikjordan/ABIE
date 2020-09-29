@@ -5,7 +5,7 @@ import numpy as np
 try:
     from ABIE import ABIE
 except ImportError:
-    print("Failed")
+    print("astroabie package not installed, falling back to local")
     # Try to run local module, by adding path to directory above 
     # library code
     from sys import path
@@ -14,20 +14,26 @@ except ImportError:
     path.append(dirname(path[0]))
     from ABIE import ABIE
 
+from display import display_2d_data
 from display import display_3d_data
 
 def main():
-    names = execute_simulation('abc.h5')
-    display_3d_data('abc.h5', names, scatter=True)
+    execute_simulation('abc.h5')
+  
 
 def execute_simulation(output_file):
     # create an ABIE instance
     sim = ABIE()
 
     # Select integrator. Possible choices are 'GaussRadau15', 'RungeKutta', etc.
-    #sim.integrator = 'WisdomHolman'
-    sim.integrator = 'GaussRadau15'
-    #sim.integrator = 'RungeKutta'
+    # integrator = 'Euler'
+    # integrator =  'LeapFrog'
+    # integrator = 'AdamsBashforth'
+    # integrator =  'RungeKutta'
+    # integrator = 'WisdomHolman'
+    integrator = 'GaussRadau15'
+    sim.integrator = integrator
+
 
     # Use the CONST_G parameter to set units
     sim.CONST_G = 1.48813611629e-34
@@ -47,6 +53,8 @@ def execute_simulation(output_file):
     sim.add(mass=8.682168328818365e25, x= 1.442472018423088e+01, y=-1.373711773058018e+01, z=-2.379347191117984e-01, vx= 2.683483979188155e-03, vy= 2.665288849251202e-03, vz=-2.486624055378518e-05, name='Uranus')
     sim.add(mass=1.024339999008106e26, x= 1.680490957344363e+01, y=-2.499455859992035e+01, z= 1.274294623716956e-01, vx= 2.584652466233836e-03, vy= 1.769493937752207e-03, vz=-9.600383320403503e-05, name='Neptune')
     print(sim.particles)
+
+    #sim.particles.primary = [0, 1]
 
     # The output file name. If not specified, the default is 'data.hdf5'
     sim.output_file = output_file
@@ -78,7 +86,10 @@ def execute_simulation(output_file):
 
     sim.stop()
 
-    return hash2names
+    # display the data
+    display_2d_data('abc.h5', hash2names=hash2names, title=integrator, scatter=True)
+    #display_3d_data('abc.h5', hash2names=hash2names, title=integrator)
+
 
 if __name__ == "__main__":
     main()

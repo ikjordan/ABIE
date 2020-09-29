@@ -5,7 +5,7 @@ import numpy as np
 try:
     from ABIE import ABIE
 except ImportError:
-    print("Failed")
+    print("astroabie package not installed, falling back to local")
     # Try to run local module, by adding path to directory above 
     # library code
     from sys import path

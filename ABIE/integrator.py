@@ -44,7 +44,7 @@ class Integrator(object):
         self.max_close_encounter_events = 1
         self.max_collision_events = 1
         self.close_encounter_distance = 0.0
-        self.__energy_init = 0.0
+        self.energy_init = 0.0
         self.__energy = 0.0
         self.__buf = None
         self.buffer_len = 1024
@@ -156,8 +156,8 @@ class Integrator(object):
         ret = 0
         # launch the integration
         while self.t < self.t_end:
-            if self.__energy_init == 0:
-                self.__energy_init = self.calculate_energy()
+            if self.energy_init == 0:
+                self.energy_init = self.calculate_energy()
             #next_t = self.t + dt - ((self.t + dt) % dt)
             next_t = self.t + dt
             if self.acceleration_method == 'numpy':
@@ -167,7 +167,7 @@ class Integrator(object):
             # the self.t is updated by the subclass
             # energy check
             self.__energy = self.calculate_energy()
-            print(('t = %f, N = %d, dE/E0 = %g' % (self.t, self.particles.N, np.abs(self.__energy - self.__energy_init) / self.__energy_init)))
+            print(('t = %f, N = %d, dE/E0 = %g' % (self.t, self.particles.N, np.abs(self.__energy - self.energy_init) / self.energy_init)))
             if os.path.isfile('STOP'):
                 break
 
