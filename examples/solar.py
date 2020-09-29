@@ -16,6 +16,7 @@ except ImportError:
 
 from display import display_2d_data
 from display import display_3d_data
+from display import display_2d_e_and_i
 
 def main():
     execute_simulation('abc.h5')
@@ -30,8 +31,8 @@ def execute_simulation(output_file):
     # integrator =  'LeapFrog'
     # integrator = 'AdamsBashforth'
     # integrator =  'RungeKutta'
-    # integrator = 'WisdomHolman'
-    integrator = 'GaussRadau15'
+    integrator = 'WisdomHolman'
+    # integrator = 'GaussRadau15'
     sim.integrator = integrator
 
 
@@ -54,24 +55,20 @@ def execute_simulation(output_file):
     sim.add(mass=1.024339999008106e26, x= 1.680490957344363e+01, y=-2.499455859992035e+01, z= 1.274294623716956e-01, vx= 2.584652466233836e-03, vy= 1.769493937752207e-03, vz=-9.600383320403503e-05, name='Neptune')
     print(sim.particles)
 
-    #sim.particles.primary = [0, 1]
+    # get a list of names back
+    names = sim.particles.names
 
     # The output file name. If not specified, the default is 'data.hdf5'
     sim.output_file = output_file
     sim.collision_output_file = 'abc.collisions.txt'
     sim.close_encounter_output_file = 'abc.ce.txt'
 
-    # Build a dictionary mapping hashes to names
-    hash2names = {}
-    for particle in sim.particles:
-        if particle.name is not None:
-            hash2names[particle.hash] = particle.name
-
     # The output frequency
-    sim.store_dt = 400
+    #sim.store_dt = 365.25*50   # Log data every 50 years
+    sim.store_dt = 100          # Log data every 100 days
 
     # The integration timestep (does not apply to Gauss-Radau15)
-    sim.h = 1
+    sim.h = 1                   # Step a day
 
     # The size of the buffer. The buffer is full when `buffer_len` outputs are
     # generated. In this case, the collective output will be flushed to the HDF5
@@ -82,13 +79,15 @@ def execute_simulation(output_file):
     sim.initialize()
 
     # perform the integration
-    sim.integrate(365.25*1000)
+    #sim.integrate(365.25*1000000)      # Million years
+    sim.integrate(365.25*1000)          # Thousand years
 
     sim.stop()
 
     # display the data
-    display_2d_data('abc.h5', hash2names=hash2names, title=integrator, scatter=True)
-    #display_3d_data('abc.h5', hash2names=hash2names, title=integrator)
+    display_2d_data(output_file, names=names, title=integrator, scatter=True)
+    # display_3d_data(output_file, names=names, title=integrator, scatter=True)
+    # display_2d_e_and_i(output_file, names=names, title=integrator)
 
 
 if __name__ == "__main__":

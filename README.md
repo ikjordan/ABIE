@@ -93,14 +93,17 @@ The original example supplied in the base repository, extended to call a modifie
 `snapshot_serialization.py` to convert the `h5` data file and then use `Matplotlib` to plot the results in 3d
 
 ### `simple.py`
-Two simple 3 body cases, which become unstable over time. These were originally described in the original *Moving Stars Around* website 
-at:  
+Two simple 3 body cases, which become unstable over time. These were originally described in the original *Moving Stars Around* book 
+that can be found at:  
 http://www.artcompsci.org/msa/web/vol_1/v1_web/v1_web.html  
 
 Uses `Matplotlib` to plot the results in 2d
 
 ### `solar.py`
-Uses the solar system position and velocity information provided in *Moving Planets Around* to simulate the solar system. Uses `Matplotlib` to plot the results in 2d
+Uses the solar system position and velocity information provided in *Moving Planets Around* to simulate the solar system. Uses `Matplotlib`
+to plot the results in 2d.  
+By default it plots the solar system for 1000 years. By removing comments the file
+can be changed to simulate the solar system for 1 millions years and recreate fig.9.8 from the book.
 
 
 ### The original README follows:
