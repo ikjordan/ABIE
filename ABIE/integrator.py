@@ -49,7 +49,7 @@ class Integrator(object):
         self.__buf = None
         self.buffer_len = 1024
         self.__initialized = False
-        self.write_update = 100
+        self.write_update = 1000
 
         # =============== C Library =============
         self.libabie = CLibABIE()

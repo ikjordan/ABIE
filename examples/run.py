@@ -93,7 +93,7 @@ def execute_simulation(output_file):
             hash2names[particle.hash] = particle.name
 
     # The output frequency
-    sim.store_dt = 0.1
+    sim.store_dt = 0.01
 
     # The integration timestep (does not apply to Gauss-Radau15)
     sim.h = 0.001
@@ -120,7 +120,7 @@ def execute_simulation(output_file):
 
     sim.stop()
 
-    display_3d_data('abc.h5', hash2names=hash2names, title=integrator)
+    display_3d_data(output_file, hash2names=hash2names, title=integrator)
 
 if __name__ == "__main__":
     main()
