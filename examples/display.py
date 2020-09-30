@@ -1,5 +1,6 @@
 import h5py
 import math
+import numpy 
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from cycler import cycler
@@ -29,7 +30,7 @@ def display_3d_data(input_file, hash2names=None, names=None, title="Trajectory",
         for i in range(0, len(x[0])): 
             # Plot all the positions for all objects
             if scatter:
-                ax.scatter(x[:,i], y[:,i], z[:,i], s=0.2, label=names[i] if names is not None else None)
+                ax.scatter(x[:,i], y[:,i], z[:,i], s=0.1, label=names[i] if names is not None else None)
             else:
                 ax.plot(x[:,i], y[:,i], z[:,i], label=names[i] if names is not None else None)
 
@@ -38,7 +39,7 @@ def display_3d_data(input_file, hash2names=None, names=None, title="Trajectory",
 
         # Request a legend and display
         if names is not None:
-            ax.legend()
+            ax.legend(markerscale=30 if scatter else 1)
         plt.show()
 
 
@@ -66,7 +67,7 @@ def display_2d_data(input_file, hash2names=None, names=None, title="Trajectory",
         for i in range(0, len(x[0])): 
             # Plot x and y positions for all objects
             if scatter:
-                ax.scatter(x[:,i], y[:,i], s=0.2, label=names[i] if names is not None else None)
+                ax.scatter(x[:,i], y[:,i], s=0.1, label=names[i] if names is not None else None)
             else:
                 ax.plot(x[:,i], y[:,i], label=names[i] if names is not None else None)
 
@@ -76,10 +77,11 @@ def display_2d_data(input_file, hash2names=None, names=None, title="Trajectory",
 
         # Request a legend and display
         if names is not None:
-            ax.legend()
+            ax.legend(markerscale=30 if scatter else 1)
         plt.show()
 
-def display_2d_e_and_i(input_file, hash2names=None, names=None, title="E and I"):
+
+def display_2d_e_and_i(input_file, hash2names=None, names=None, smooth = False, title="$e$ and $I$"):
     # flatten the data
     converted = snapshot_convert(input_file)
 
@@ -106,23 +108,39 @@ def display_2d_e_and_i(input_file, hash2names=None, names=None, title="E and I")
         fig.subplots_adjust(hspace=0)
 
         fig.suptitle(title, fontsize=16)
-        ax.prop_cycle : cycler(color=['blue', 'green', 'red', 'cyan', 'magenta', 'yellow', 
-                                      'black', 'purple', 'pink', 'brown', 'orange', 'teal', 
-                                      'coral', 'lightblue', 'lime', 'lavender', 'turquoise', 
-                                      'darkgreen', 'tan', 'salmon', 'gold'])
         for i in range(1, len(ecc[0])):
             # Plot eccentricity and incination against time - ignore the first data set
-            ax[0].plot(time, ecc[:,i], label=names[i] if names is not None else None)
-            ax[1].plot(time, inc[:,i])
+            start = 0
+            # Optional smooth eccentricity
+            if smooth == True:
+                n = 200  
+                try:
+                    from scipy.signal import lfilter
+                    b = [1.0 / n] * n
+                    a = 1
+                    ecc[:,i] = lfilter(b, a, ecc[:,i])
+                    inc[:,i] = lfilter(b, a, inc[:,i])
+                    start = n
+                except:
+                    print("Scipy not installed - falling back to numpy polynomial fit")
+                    pol = numpy.polynomial.chebyshev.chebfit(time, ecc[:,i], n)
+                    ecc[:,i] = numpy.polynomial.chebyshev.chebval(time, pol)
+                    pol = numpy.polynomial.chebyshev.chebfit(time, inc[:,i], n)
+                    inc[:,i] = numpy.polynomial.chebyshev.chebval(time, pol)
 
-        ax[0].set_ylabel('Ei')
-        ax[1].set_ylabel('I/deg')
-        ax[1].set_xlabel('t/Myr')
+            ax[0].plot(time[start:], ecc[start:,i], label=names[i] if names is not None else None)
+            ax[1].plot(time[start:], inc[start:,i])
+
+        ax[0].set_ylabel('$e_i$')
+        ax[1].set_ylabel('$I_i$/deg')
+        ax[1].set_xlabel('$t$/Myr')
 
         # Finished with the data
         h5f.close()
 
         # Request a legend and display
         if names is not None:
-            fig.legend()
+            legend = fig.legend()
+            for line in legend.get_lines():
+                line.set_linewidth(4.0)
         plt.show()

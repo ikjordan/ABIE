@@ -19,10 +19,16 @@ from display import display_3d_data
 from display import display_2d_e_and_i
 
 def main():
-    execute_simulation('abc.h5')
-  
+    million = False
 
-def execute_simulation(output_file):
+    if million:
+        filename = '1My.h5'
+    else:
+        filename = 'solar.h5'
+    execute_simulation(filename, million)
+
+
+def execute_simulation(output_file, million=False):
     # create an ABIE instance
     sim = ABIE()
 
@@ -64,8 +70,10 @@ def execute_simulation(output_file):
     sim.close_encounter_output_file = 'abc.ce.txt'
 
     # The output frequency
-    #sim.store_dt = 365.25*50   # Log data every 50 years
-    sim.store_dt = 100          # Log data every 100 days
+    if million:
+        sim.store_dt = 365.25*50    # Log data every 50 years
+    else:
+        sim.store_dt = 100          # Log data every 100 days
 
     # The integration timestep (does not apply to Gauss-Radau15)
     sim.h = 1                   # Step a day
@@ -79,15 +87,19 @@ def execute_simulation(output_file):
     sim.initialize()
 
     # perform the integration
-    #sim.integrate(365.25*1000000)      # Million years
-    sim.integrate(365.25*1000)          # Thousand years
+    if million:
+        sim.integrate(365.25*1000000)       # Million years
+    else:
+        sim.integrate(365.25*1000)          # Thousand years
 
     sim.stop()
 
     # display the data
-    display_2d_data(output_file, names=names, title=integrator, scatter=True)
-    # display_3d_data(output_file, names=names, title=integrator, scatter=True)
-    # display_2d_e_and_i(output_file, names=names, title=integrator)
+    if million:
+        display_2d_e_and_i(output_file, names=names, smooth=True)
+    else:
+        display_2d_data(output_file, names=names, title=integrator, scatter=True)
+        #display_3d_data(output_file, names=names, title=integrator, scatter=True)
 
 
 if __name__ == "__main__":
