@@ -14,7 +14,7 @@ except ImportError:
     path.append(dirname(path[0]))
     from ABIE import ABIE
 
-from display import display_2d_data
+from display import Display
 
 def main():
     execute_simulation('abc.h5')
@@ -49,6 +49,10 @@ def execute_simulation(output_file):
     sim.add(mass=1.0, x=-0.500000000000000, y= 0.866025403784439, z= 0.000000000000000, vx=-0.658037006476246, vy=-0.379917842825796, vz= 0.000000000000000, name='Two')
     sim.add(mass=1.0, x=-0.500000000000000, y=-0.866025403784438, z= 0.000000000000000, vx= 0.658037006476246, vy=-0.379917842825797, vz= 0.000000000000000, name='Three')
 
+    # Velocity perturbation on pure 3 body
+    #sim.add(mass=1.0, x= -1.0, y= 0.0, z= 0.0, vx= 0.0, vy= -0.5, vz= 0.0, name='One')
+    #sim.add(mass=1.0, x=  1.0, y= 0.0, z= 0.0, vx= 0.0, vy=  0.5, vz= 0.0, name='Two')
+
     # The output file name. If not specified, the default is 'data.hdf5'
     sim.output_file = output_file
     sim.collision_output_file = 'abc.collisions.txt'
@@ -80,7 +84,10 @@ def execute_simulation(output_file):
     sim.stop()
 
     # display the data
-    display_2d_data(output_file, hash2names=hash2names, title=integrator)
+    d = Display()
+    d.display_2d_data(output_file, hash2names=hash2names, title=integrator)
+    d.display_energy_delta(output_file, g=sim.CONST_G,  divisor=1.0)
+    d.show()
 
 
 if __name__ == "__main__":

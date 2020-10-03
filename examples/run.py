@@ -14,7 +14,7 @@ except ImportError:
     path.append(dirname(path[0]))
     from ABIE import ABIE
 
-from display import display_3d_data
+from display import Display
 
 def main():
     execute_simulation('abc.h5')
@@ -120,7 +120,9 @@ def execute_simulation(output_file):
 
     sim.stop()
 
-    display_3d_data(output_file, hash2names=hash2names, title=integrator)
+    d = Display()
+    d.display_3d_data(output_file, hash2names=hash2names, title=integrator)
+    d.show()
 
 if __name__ == "__main__":
     main()

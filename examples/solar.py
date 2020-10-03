@@ -14,9 +14,7 @@ except ImportError:
     path.append(dirname(path[0]))
     from ABIE import ABIE
 
-from display import display_2d_data
-from display import display_3d_data
-from display import display_2d_e_and_i
+from display import Display
 
 def main():
     million = False
@@ -37,8 +35,8 @@ def execute_simulation(output_file, million=False):
     # integrator =  'LeapFrog'
     # integrator = 'AdamsBashforth'
     # integrator =  'RungeKutta'
-    integrator = 'WisdomHolman'
-    # integrator = 'GaussRadau15'
+    # integrator = 'WisdomHolman'
+    integrator = 'GaussRadau15'
     sim.integrator = integrator
 
 
@@ -71,7 +69,7 @@ def execute_simulation(output_file, million=False):
 
     # The output frequency
     if million:
-        sim.store_dt = 365.25*50    # Log data every 50 years
+        sim.store_dt = 365.25*500   # Log data every 500 years
     else:
         sim.store_dt = 100          # Log data every 100 days
 
@@ -88,18 +86,21 @@ def execute_simulation(output_file, million=False):
 
     # perform the integration
     if million:
-        sim.integrate(365.25*1000000)       # Million years
+        divisor = 365.25 * 1000000          # Million years
+        units = "MYr"
     else:
-        sim.integrate(365.25*1000)          # Thousand years
+        divisor = 365.25 * 1000             # Thousand years
+        units = "kYr"
 
+    sim.integrate(divisor)
     sim.stop()
 
     # display the data
-    if million:
-        display_2d_e_and_i(output_file, names=names, smooth=True)
-    else:
-        display_2d_data(output_file, names=names, title=integrator, scatter=True)
-        #display_3d_data(output_file, names=names, title=integrator, scatter=True)
+    d = Display()
+    d.display_2d_data(output_file, names=names, title=integrator, scatter=True)
+    d.display_3d_data(output_file, names=names, title=integrator, scatter=True)
+    d.display_energy_delta(output_file, g=sim.CONST_G, divisor=divisor, units=units)
+    d.show()
 
 
 if __name__ == "__main__":

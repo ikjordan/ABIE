@@ -4,18 +4,18 @@ import numpy as np
 class Tools(object):
 
     @staticmethod
+    # sol_state has all positions, then all velocities, by all times
     def compute_energy(sol_state, masses, const_g):
         n_rows, n_cols = sol_state.shape
         if n_cols % 6 == 0 and n_rows > 0:
             energy = np.zeros(n_rows)
             for t in range(n_rows):
-                for i in range(0, n_cols/6):
-                    energy[t] += 0.5 * masses[i] * np.linalg.norm(sol_state[t][n_cols/2+i*3:n_cols/2+i*3+3]) ** 2
-                    for j in range(0, n_cols/6):
-                        if i == j:
-                            continue
-                        energy[t] -= .5 * const_g * masses[i] * masses[j] / np.linalg.norm(
-                            sol_state[t][i*3:i*3+3] - sol_state[t][j*3:j*3+3])
+                for i in range(0, int(n_cols/6)):
+                    energy[t] += 0.5 * masses[i] * np.linalg.norm(sol_state[t][int(n_cols/2)+i*3:int(n_cols/2)+i*3+3]) ** 2
+                    for j in range(0, int(n_cols/6)):
+                        if i != j:
+                            energy[t] -= 0.5 * const_g * masses[i] * masses[j] / \
+                              np.linalg.norm(sol_state[t][i*3:i*3+3] - sol_state[t][j*3:j*3+3])
             return energy
 
     @staticmethod
