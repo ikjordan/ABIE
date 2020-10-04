@@ -167,7 +167,7 @@ class Integrator(object):
             # the self.t is updated by the subclass
             # energy check
             self.__energy = self.calculate_energy()
-            print(('t = %f, N = %d, dE/E0 = %g' % (self.t, self.particles.N, np.abs(self.__energy - self.energy_init) / self.energy_init)))
+            print(('t = %f, N = %d, E = %g, dE/E0 = %g' % (self.t, self.particles.N, self.__energy, np.abs(self.__energy - self.energy_init) / self.energy_init)))
             if os.path.isfile('STOP'):
                 break
 

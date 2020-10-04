@@ -35,7 +35,7 @@ def execute_simulation(output_file, million=False):
     # integrator =  'LeapFrog'
     # integrator = 'AdamsBashforth'
     # integrator =  'RungeKutta'
-    # integrator = 'WisdomHolman'
+    #integrator = 'WisdomHolman'
     integrator = 'GaussRadau15'
     sim.integrator = integrator
 
@@ -69,7 +69,7 @@ def execute_simulation(output_file, million=False):
 
     # The output frequency
     if million:
-        sim.store_dt = 365.25*500   # Log data every 500 years
+        sim.store_dt = 365.25*100   # Log data every 100 years
     else:
         sim.store_dt = 100          # Log data every 100 days
 
@@ -86,10 +86,10 @@ def execute_simulation(output_file, million=False):
 
     # perform the integration
     if million:
-        divisor = 365.25 * 1000000          # Million years
+        divisor = 365.25 * 1000000         # Million years
         units = "MYr"
     else:
-        divisor = 365.25 * 1000             # Thousand years
+        divisor = 365.25 * 1000            # Thousand years
         units = "kYr"
 
     sim.integrate(divisor)
@@ -97,9 +97,11 @@ def execute_simulation(output_file, million=False):
 
     # display the data
     d = Display()
-    d.display_2d_data(output_file, names=names, title=integrator, scatter=True)
-    d.display_3d_data(output_file, names=names, title=integrator, scatter=True)
-    d.display_energy_delta(output_file, g=sim.CONST_G, divisor=divisor, units=units)
+    d.display_2d_data(output_file, names=names, title=integrator, scatter=True, bary=(integrator!='WisdomHolman'))
+    d.display_3d_data(output_file, names=names, title=integrator, scatter=True, bary=(integrator!='WisdomHolman'))
+    d.display_energy_delta(output_file, g=sim.CONST_G, divisor=divisor, units=units, helio=(integrator=='WisdomHolman'))
+    if million:
+        d.display_2d_e_and_i(output_file, names=names, divisor=divisor, units=units, smooth=False)
     d.show()
 
 

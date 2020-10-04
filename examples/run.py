@@ -122,6 +122,7 @@ def execute_simulation(output_file):
 
     d = Display()
     d.display_3d_data(output_file, hash2names=hash2names, title=integrator)
+    d.display_energy_delta(output_file, g=sim.CONST_G, helio=(integrator=='WisdomHolman'))
     d.show()
 
 if __name__ == "__main__":

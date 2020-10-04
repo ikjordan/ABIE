@@ -86,7 +86,7 @@ def execute_simulation(output_file):
     # display the data
     d = Display()
     d.display_2d_data(output_file, hash2names=hash2names, title=integrator)
-    d.display_energy_delta(output_file, g=sim.CONST_G,  divisor=1.0)
+    d.display_energy_delta(output_file, g=sim.CONST_G, helio=(integrator=='WisdomHolman'))
     d.show()
 
 

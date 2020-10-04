@@ -10,13 +10,94 @@ class Tools(object):
         if n_cols % 6 == 0 and n_rows > 0:
             energy = np.zeros(n_rows)
             for t in range(n_rows):
-                for i in range(0, int(n_cols/6)):
-                    energy[t] += 0.5 * masses[i] * np.linalg.norm(sol_state[t][int(n_cols/2)+i*3:int(n_cols/2)+i*3+3]) ** 2
-                    for j in range(0, int(n_cols/6)):
+                for i in range(0, n_cols//6):
+                    energy[t] += 0.5 * masses[i] * np.linalg.norm(sol_state[t][n_cols//2+i*3:n_cols//2+i*3+3]) ** 2
+                    for j in range(0, n_cols//6):
                         if i != j:
                             energy[t] -= 0.5 * const_g * masses[i] * masses[j] / \
                               np.linalg.norm(sol_state[t][i*3:i*3+3] - sol_state[t][j*3:j*3+3])
             return energy
+
+    @staticmethod
+    # Balance the linear momentum, by either adjusting the velocity of particle 0, or the 
+    # velocities of all particles
+    def balance_momentum(velocities, masses, first_particle=False):
+        n_rows, n_cols = velocities.shape
+        if n_cols % 3 == 0 and n_rows == 1:
+            mom = np.zeros(3)
+            for m in masses:
+                for i in range(0, 3):
+                    mom[i] += m * velocities[3*p+i]
+
+        if not first_particle:
+            return mon / -masses.sum()
+        else:
+            return mon / -masses[0]
+        
+
+    @staticmethod
+    def helio2bary(x, masses):
+        """
+        Transform position and velocity data spanning multiple times
+        from heliocentric to barycentric coordinates.
+
+        :param x: state (heliocentric coordinates) for all time
+        :param masses: masses of the bodies
+        :return:
+            - bary: barycentric coordinates for each time
+        """
+
+        # Total mass of the system:
+        mtotal = masses.sum()
+
+        ticks, n_cols = x.shape
+
+        if n_cols % 6 == 0 and ticks > 0:
+            # Allocate barycentric coordinates:
+            bary = np.zeros(shape=(ticks, n_cols))
+            nbodies = n_cols // 6
+
+            for t in range(ticks): 
+                for ibod in range(1, nbodies):
+                    bary[t, 0: 3] += masses[ibod] * x[t, ibod * 3: (ibod + 1) * 3]
+                    bary[t, nbodies * 3: (nbodies + 1) * 3] += masses[ibod] \
+                                                            * x[t, (nbodies + ibod) * 3: (nbodies + ibod + 1) * 3]
+
+                bary[t] = -bary[t] / mtotal
+
+                for ibod in range(1, nbodies):
+                    bary[t, ibod * 3: (ibod + 1) * 3] = x[t, ibod * 3: (ibod + 1) * 3] + bary[t, 0: 3]
+                    bary[t, (nbodies + ibod) * 3: (nbodies + ibod + 1) * 3] = \
+                        x[t, (nbodies + ibod) * 3: (nbodies + ibod + 1) * 3] \
+                        + bary[t, nbodies * 3: (nbodies + 1) * 3]
+
+            return bary
+
+
+    @staticmethod
+    def move_to_helio(x):
+        """
+        Transform position and velocity data spanning multiple times
+        from barycentric to heliocentric coordinates.
+
+        :param x: state (barycentric coordinates) for all time
+        :return:
+            - helio: heliocentric coordinates for each time
+        """
+        ticks, n_cols = x.shape
+        if n_cols % 6 == 0 and ticks > 0:
+            helio = x.copy()
+            nbodies = n_cols // 6
+            for t in range(ticks): 
+                for ibod in range(1, nbodies):
+                    helio[t, ibod * 3: (ibod + 1) * 3] = helio[t, ibod * 3: (ibod + 1) * 3] - helio[t, 0: 3]
+                    helio[t, (nbodies + ibod) * 3: (nbodies + ibod + 1) * 3] = \
+                        helio[t, (nbodies + ibod) * 3: (nbodies + ibod + 1) * 3] \
+                        - helio[t, nbodies * 3: (nbodies + 1) * 3]
+                # First body is now at origin
+                helio[t,0:3] = [0.0, 0.0, 0.0]
+            return helio
+
 
     @staticmethod
     def from_orbital_elements_to_cartesian(
