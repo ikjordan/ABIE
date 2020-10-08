@@ -30,32 +30,11 @@ class Display:
             self.converted = snapshot_convert(input_file)
             return self.converted
 
-    @staticmethod
-    def _package(x,y,z,vx,vy,vz):
-        ticks, particles = x.shape
-        states = numpy.empty(shape=(ticks, 6*particles))
-
-        # Package the positions for all particles, then the velocities for all particles for each time
-        for t in range(0, ticks):
-            for p in range(0, particles):
-                states[t, 3*p] = x[t, p]
-                states[t, 3*p+1] = y[t, p]
-                states[t, 3*p+2] = z[t, p]
-
-            for p in range(0, particles):
-                states[t, 3*(particles+p)] = vx[t, p]
-                states[t, 3*(particles+p)+1] = vy[t, p]
-                states[t, 3*(particles+p)+2] = vz[t, p]
-
-        return states
-
-
     def show(self):
         # Show all of the figures
         if self.next_figure > 1:
             plt.show()
     
-
     def display_3d_data(self, input_file, hash2names=None, names=None, title="Trajectory", scatter=False, bary=False):
         # flatten the data
         converted = self._convert(input_file)
@@ -71,14 +50,15 @@ class Display:
             vy = h5f['/vy'][()]   # Get y velocity for the particles
             vz = h5f['/vz'][()]   # Get z velocity for the particles
 
-           # Use the hash (if provided) in favour of the supplied names
+            # Package the positions and velocities
+            ticks, particles = x.shape
+            states = numpy.concatenate((numpy.dstack((x,y,z)),numpy.dstack((vx,vy,vz))), axis=1).reshape(ticks, 6*particles) 
+
+            # Use the hash (if provided) in favour of the supplied names
             if hash2names is not None:
                 names = []
                 for hash in h5f['/hash'][(0)]:
                     names.append(hash2names.get(hash,"Unknown"))
-
-            # Package the positions and velocities
-            states = Display._package(x, y, z, vx, vy, vz)
 
             # Convert to heliocentric coords if requested
             if bary:
@@ -88,7 +68,8 @@ class Display:
             ax = fig.gca(projection='3d')
             ax.set_title(title)
             ax.prop_cycle : cycler(color='bgrcmyk')
-            for i in range(0, len(x[0])): 
+            _, width = states.shape
+            for i in range(0, width // 6): 
                 # Plot all the positions for all objects
                 if scatter:
                     ax.scatter(states[:,3*i], states[:,3*i+1], states[:,3*i+2], s=0.1, label=names[i] if names is not None else None)
@@ -118,15 +99,16 @@ class Display:
             vy = h5f['/vy'][()]   # Get y velocity for the particles
             vz = h5f['/vz'][()]   # Get z velocity for the particles
 
+            # Package the positions and velocities
+            ticks, particles = x.shape
+            states = numpy.concatenate((numpy.dstack((x,y,z)),numpy.dstack((vx,vy,vz))), axis=1).reshape(ticks, 6*particles) 
+
             # Use the hash (if provided) in favour of the supplied names
             if hash2names is not None:
                 names = []
                 for hash in h5f['/hash'][(0)]:
                     names.append(hash2names.get(hash,"Unknown"))
             
-            # Package the positions and velocities
-            states = Display._package(x, y, z, vx, vy, vz)
-
             # Convert to heliocentric coords if requested
             if bary:
                 states = Tools.move_to_helio(states)
@@ -136,7 +118,8 @@ class Display:
             ax = plt.gca()
             ax.set_title(title)
             ax.prop_cycle : cycler(color='bgrcmyk')
-            for i in range(0, len(x[0])): 
+            _, width = states.shape
+            for i in range(0, width // 6): 
                 # Plot x and y positions for all objects
                 if scatter:
                     ax.scatter(states[:,3*i], states[:,3*i+1], s=0.1, label=names[i] if names is not None else None)
@@ -165,14 +148,15 @@ class Display:
             vy = h5f['/vy'][()]   # Get y velocity for the particles
             vz = h5f['/vz'][()]   # Get z velocity for the particles
 
+            # Package the positions and velocities
+            ticks, particles = x.shape
+            states = numpy.concatenate((numpy.dstack((x,y,z)),numpy.dstack((vx,vy,vz))), axis=1).reshape(ticks, 6*particles) 
+
             time = h5f['/time'][()]   # Get time
             mass = h5f['/mass'][(0)]
 
             # Convert the time
             time = time / divisor
-
-            # Package the positions and velocities
-            states = Display._package(x, y, z, vx, vy, vz)
 
             if helio:
                 # Transform to barycentric coords
@@ -188,13 +172,15 @@ class Display:
 
             # Plot delta against time
             ax.plot(time, (energy - energy[0]) / energy[0])
+            # Finished with the data
+            h5f.close()
             ax.set_ylabel('$\Delta$')
             if units is not None:
                 x_lab = '$t$/{}'.format(units)
             else:
                 x_lab = 'Time'
             ax.set_xlabel(x_lab)
-
+            
 
     def display_2d_e_and_i(self, input_file, hash2names=None, names=None, smooth = False, title="$e$ and $I$", divisor=1.0, units=None):
         # flatten the data

@@ -32,10 +32,10 @@ def execute_simulation(output_file, million=False):
 
     # Select integrator. Possible choices are 'GaussRadau15', 'RungeKutta', etc.
     # integrator = 'Euler'
-    # integrator =  'LeapFrog'
+    # integrator = 'LeapFrog'
     # integrator = 'AdamsBashforth'
-    # integrator =  'RungeKutta'
-    #integrator = 'WisdomHolman'
+    # integrator = 'RungeKutta'
+    # integrator = 'WisdomHolman'
     integrator = 'GaussRadau15'
     sim.integrator = integrator
 
@@ -98,10 +98,10 @@ def execute_simulation(output_file, million=False):
     # display the data
     d = Display()
     d.display_2d_data(output_file, names=names, title=integrator, scatter=True, bary=(integrator!='WisdomHolman'))
-    d.display_3d_data(output_file, names=names, title=integrator, scatter=True, bary=(integrator!='WisdomHolman'))
     d.display_energy_delta(output_file, g=sim.CONST_G, divisor=divisor, units=units, helio=(integrator=='WisdomHolman'))
+    d.display_3d_data(output_file, names=names, title=integrator, scatter=True, bary=(integrator!='WisdomHolman'))
     if million:
-        d.display_2d_e_and_i(output_file, names=names, divisor=divisor, units=units, smooth=False)
+        d.display_2d_e_and_i(output_file, names=names, divisor=divisor, units=units, smooth=80.0)
     d.show()
 
 
