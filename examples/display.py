@@ -30,29 +30,35 @@ class Display:
             self.converted = snapshot_convert(input_file)
             return self.converted
 
+
+    @staticmethod
+    def _package(h5f):
+        x = h5f['/x'][()]     # Get x for the particles
+        y = h5f['/y'][()]     # Get y for the particles
+        z = h5f['/z'][()]     # Get z for the particles
+
+        vx = h5f['/vx'][()]   # Get x velocity for the particles
+        vy = h5f['/vy'][()]   # Get y velocity for the particles
+        vz = h5f['/vz'][()]   # Get z velocity for the particles
+
+        # Package the positions and velocities
+        ticks, particles = x.shape
+        return numpy.concatenate((numpy.dstack((x,y,z)),numpy.dstack((vx,vy,vz))), axis=1).reshape(ticks, 6*particles) 
+
+
     def show(self):
         # Show all of the figures
         if self.next_figure > 1:
             plt.show()
-    
+
+
     def display_3d_data(self, input_file, hash2names=None, names=None, title="Trajectory", scatter=False, bary=False):
         # flatten the data
         converted = self._convert(input_file)
 
         if converted:
             h5f = h5py.File(converted[0], 'r')
-
-            x = h5f['/x'][()]     # Get x for the particles
-            y = h5f['/y'][()]     # Get y for the particles
-            z = h5f['/y'][()]     # Get z for the particles
-
-            vx = h5f['/vx'][()]   # Get x velocity for the particles
-            vy = h5f['/vy'][()]   # Get y velocity for the particles
-            vz = h5f['/vz'][()]   # Get z velocity for the particles
-
-            # Package the positions and velocities
-            ticks, particles = x.shape
-            states = numpy.concatenate((numpy.dstack((x,y,z)),numpy.dstack((vx,vy,vz))), axis=1).reshape(ticks, 6*particles) 
+            states = self._package(h5f)
 
             # Use the hash (if provided) in favour of the supplied names
             if hash2names is not None:
@@ -67,6 +73,7 @@ class Display:
             fig = self._get_figure()
             ax = fig.gca(projection='3d')
             ax.set_title(title)
+
             ax.prop_cycle : cycler(color='bgrcmyk')
             _, width = states.shape
             for i in range(0, width // 6): 
@@ -76,7 +83,18 @@ class Display:
                 else:
                     ax.plot(states[:,3*i], states[:,3*i+1], states[:,3*i+2], label=names[i] if names is not None else None)
 
-            # Finished with the data
+            # As equal does not work for 3d plots
+            left, right = ax.get_xlim()
+            bottom, top = ax.get_ylim()
+            low, high = ax.get_zlim()
+
+            neg = min(left, bottom, low)
+            pos = max(right, top, high)
+
+            ax.set_xlim(neg, pos)
+            ax.set_ylim(neg, pos)
+            ax.set_zlim(neg, pos)
+
             h5f.close()
 
             # Request a legend
@@ -90,18 +108,7 @@ class Display:
 
         if converted:
             h5f = h5py.File(converted[0], 'r')
-
-            x = h5f['/x'][()]     # Get x position for the particles
-            y = h5f['/y'][()]     # Get y position for the particles
-            z = h5f['/z'][()]     # Get z position for the particles
-
-            vx = h5f['/vx'][()]   # Get x velocity for the particles
-            vy = h5f['/vy'][()]   # Get y velocity for the particles
-            vz = h5f['/vz'][()]   # Get z velocity for the particles
-
-            # Package the positions and velocities
-            ticks, particles = x.shape
-            states = numpy.concatenate((numpy.dstack((x,y,z)),numpy.dstack((vx,vy,vz))), axis=1).reshape(ticks, 6*particles) 
+            states = self._package(h5f)
 
             # Use the hash (if provided) in favour of the supplied names
             if hash2names is not None:
@@ -134,23 +141,14 @@ class Display:
             if names is not None:
                 ax.legend(markerscale=30 if scatter else 1)
 
+
     def display_energy_delta(self, input_file, title="Energy Delta", g=1.0, divisor=1.0, units=None, helio=False):
+        # flatten the data
         converted = self._convert(input_file)
 
         if converted:
             h5f = h5py.File(converted[0], 'r')
-
-            x = h5f['/x'][()]     # Get x position for the particles
-            y = h5f['/y'][()]     # Get y position for the particles
-            z = h5f['/z'][()]     # Get z position for the particles
-
-            vx = h5f['/vx'][()]   # Get x velocity for the particles
-            vy = h5f['/vy'][()]   # Get y velocity for the particles
-            vz = h5f['/vz'][()]   # Get z velocity for the particles
-
-            # Package the positions and velocities
-            ticks, particles = x.shape
-            states = numpy.concatenate((numpy.dstack((x,y,z)),numpy.dstack((vx,vy,vz))), axis=1).reshape(ticks, 6*particles) 
+            states = self._package(h5f)
 
             time = h5f['/time'][()]   # Get time
             mass = h5f['/mass'][(0)]
@@ -174,13 +172,14 @@ class Display:
             ax.plot(time, (energy - energy[0]) / energy[0])
             # Finished with the data
             h5f.close()
+
             ax.set_ylabel('$\Delta$')
             if units is not None:
                 x_lab = '$t$/{}'.format(units)
             else:
                 x_lab = 'Time'
             ax.set_xlabel(x_lab)
-            
+
 
     def display_2d_e_and_i(self, input_file, hash2names=None, names=None, smooth = False, title="$e$ and $I$", divisor=1.0, units=None):
         # flatten the data
