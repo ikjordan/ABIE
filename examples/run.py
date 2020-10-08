@@ -120,9 +120,9 @@ def execute_simulation(output_file):
 
     sim.stop()
 
-    d = Display()
-    d.display_3d_data(output_file, hash2names=hash2names, title=integrator)
-    d.display_energy_delta(output_file, g=sim.CONST_G, helio=(integrator=='WisdomHolman'))
+    d = Display(output_file)
+    d.display_3d_data(hash2names=hash2names, title=integrator)
+    d.display_energy_delta(g=sim.CONST_G, helio=(integrator=='WisdomHolman'))
     d.show()
 
 if __name__ == "__main__":

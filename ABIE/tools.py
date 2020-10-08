@@ -11,10 +11,10 @@ class Tools(object):
             energy = np.zeros(n_rows)
             for t in range(n_rows):
                 for i in range(0, n_cols//6):
-                    energy[t] += 0.5 * masses[i] * np.linalg.norm(sol_state[t][n_cols//2+i*3:n_cols//2+i*3+3]) ** 2
+                    energy[t] += 0.5 * masses[t, i] * np.linalg.norm(sol_state[t][n_cols//2+i*3:n_cols//2+i*3+3]) ** 2
                     for j in range(0, n_cols//6):
                         if i != j:
-                            energy[t] -= 0.5 * const_g * masses[i] * masses[j] / \
+                            energy[t] -= 0.5 * const_g * masses[t, i] * masses[t, j] / \
                               np.linalg.norm(sol_state[t][i*3:i*3+3] - sol_state[t][j*3:j*3+3])
             return energy
 
@@ -27,12 +27,12 @@ class Tools(object):
             mom = np.zeros(3)
             for m in masses:
                 for i in range(0, 3):
-                    mom[i] += m * velocities[3*p+i]
+                    mom[i] += m * velocities[n_cols // 3 + i]
 
         if not first_particle:
-            return mon / -masses.sum()
+            return mom / -masses.sum()
         else:
-            return mon / -masses[0]
+            return mom / -masses[0]
         
 
     @staticmethod
@@ -42,14 +42,10 @@ class Tools(object):
         from heliocentric to barycentric coordinates.
 
         :param x: state (heliocentric coordinates) for all time
-        :param masses: masses of the bodies
+        :param masses: masses of the bodies, for all time
         :return:
             - bary: barycentric coordinates for each time
         """
-
-        # Total mass of the system:
-        mtotal = masses.sum()
-
         ticks, n_cols = x.shape
 
         if n_cols % 6 == 0 and ticks > 0:
@@ -59,11 +55,11 @@ class Tools(object):
 
             for t in range(ticks): 
                 for ibod in range(1, nbodies):
-                    bary[t, 0: 3] += masses[ibod] * x[t, ibod * 3: (ibod + 1) * 3]
-                    bary[t, nbodies * 3: (nbodies + 1) * 3] += masses[ibod] \
+                    bary[t, 0: 3] += masses[t, ibod] * x[t, ibod * 3: (ibod + 1) * 3]
+                    bary[t, nbodies * 3: (nbodies + 1) * 3] += masses[t, ibod] \
                                                             * x[t, (nbodies + ibod) * 3: (nbodies + ibod + 1) * 3]
 
-                bary[t] = -bary[t] / mtotal
+                bary[t] = -bary[t] / masses[t, :].sum()
 
                 for ibod in range(1, nbodies):
                     bary[t, ibod * 3: (ibod + 1) * 3] = x[t, ibod * 3: (ibod + 1) * 3] + bary[t, 0: 3]
