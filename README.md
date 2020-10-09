@@ -102,10 +102,24 @@ Uses `Matplotlib` to plot the results in 2d
 ### `solar.py`
 Uses the solar system position and velocity information provided in *Moving Planets Around* to simulate the solar system. Uses `Matplotlib`
 to plot the results in 2d.  
-By default it plots the solar system for 1000 years. By removing comments the file
-can be changed to simulate the solar system for 1 millions years and recreate fig.9.8 from the book.
+By default it plots the solar system for 1000 years. By setting the variable `million`
+to `True` the simulation will run for 1 millions years and 
+recreate fig. 9.8 from the book. The figure is optionally smoothed
+using a low pass filter.   
+The energy delta over time is displayed. If necessary coordinates
+are converted to Baryocentric, so that the energy calculation is consistent over time
 
+### `saturn.py`
+Simulates two moons of Saturn - Epimetheus and Janus, which are co-orbital. The change in
+orbital radius every 4 to 5 years as the moons swap is graphed
+using `Matplotlib`
+ 
+#### `display.py`
+Helper class to display multiple graphs using `matplotlib`  
 
+#### `tools.py`
+Added helper methods to calculate residual momentum in a system, and to convert
+between coordinate systems
 ### The original README follows:
 
 # Moving Planets Around (MPA) Project

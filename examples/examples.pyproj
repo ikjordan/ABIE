@@ -26,6 +26,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="run.py" />
+    <Compile Include="saturn.py" />
     <Compile Include="simple.py" />
     <Compile Include="solar.py" />
   </ItemGroup>
