@@ -1,6 +1,6 @@
 import h5py
 import math
-import numpy 
+import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from cycler import cycler
@@ -43,9 +43,9 @@ class Display:
     def _package(self):
         # Package the positions and velocities
         ticks, particles = self.h5f['/x'][()].shape
-        return numpy.concatenate((numpy.dstack((self.h5f['/x'][()], self.h5f['/y'][()], self.h5f['/z'][()])),
-                                  numpy.dstack((self.h5f['/vx'][()], self.h5f['/vy'][()], self.h5f['/vz'][()]))), 
-                                  axis=1).reshape(ticks, 6*particles) 
+        return np.concatenate((np.dstack((self.h5f['/x'][()], self.h5f['/y'][()], self.h5f['/z'][()])),
+                               np.dstack((self.h5f['/vx'][()], self.h5f['/vy'][()], self.h5f['/vz'][()]))), 
+                               axis=1).reshape(ticks, 6*particles) 
 
 
     def show(self):
@@ -75,7 +75,6 @@ class Display:
         ax = fig.gca(projection='3d')
         ax.set_title(title)
 
-        ax.prop_cycle : cycler(color='bgrcmyk')
         _, width = states.shape
         for i in range(0, width // 6): 
             # Plot all the positions for all objects
@@ -102,7 +101,7 @@ class Display:
             ax.legend(markerscale=30 if scatter else 1)
 
 
-    def display_2d_data(self, hash2names=None, names=None, title="Trajectory", scatter=False, bary=False):
+    def display_2d_data(self, hash2names=None, names=None, title="Trajectory", scatter=False, bary=False, equal=True):
         # Reform the data for possible converstion
         states = self._package()
 
@@ -117,10 +116,8 @@ class Display:
             states = Tools.move_to_helio(states)
 
         self._get_figure()
-        plt.subplot(111)
-        ax = plt.gca()
+        ax = plt.subplot(111)
         ax.set_title(title)
-        ax.prop_cycle : cycler(color='bgrcmyk')
         _, width = states.shape
         for i in range(0, width // 6): 
             # Plot x and y positions for all objects
@@ -129,12 +126,59 @@ class Display:
             else:
                 ax.plot(states[:,3*i], states[:,3*i+1], label=names[i] if names is not None else None)
 
-        ax.axis('equal')
+        if equal:
+            ax.axis('equal')
 
         # Request a legend and display
         if names is not None:
             ax.legend(markerscale=30 if scatter else 1)
 
+    def display_radius(self, hash2names=None, names=None, title="Trajectory", divisor=1.0, units=None, bary=False):
+        # Reform the data for possible converstion
+        states = self._package()
+
+        # Get time and convert
+        time = self.h5f['/time'][()]    # Get time
+        time = time / divisor
+
+        # Use the hash (if provided) in favour of the supplied names
+        if hash2names is not None:
+            names = []
+            for hash in self.h5f['/hash'][(0)]:
+                names.append(hash2names.get(hash,"Unknown"))
+        
+        # Convert to heliocentric coords if requested
+        if bary:
+            states = Tools.move_to_helio(states)
+
+        # Create the output data
+        ticks, width = states.shape
+        radii = np.zeros(shape=(ticks, width))
+
+        for t in range(0, ticks):
+            for i in range(1, width // 6):
+                # Calulate the magnitude of the position vector and convert to km
+                radii[t, i-1] = np.linalg.norm((states[t,3*i], states[t,3*i+1], states[t,3*i+2]))/1000
+
+        self._get_figure()
+        ax = plt.subplot(111)
+        ax.set_title(title)
+        for i in range(1, width // 6): 
+            # Plot radius against time for all particles, excluding the first particle
+            ax.plot(time, (radii[:,i-1]), label=names[i] if names is not None else None)
+        
+        y_lab = "Distance from {} /km"
+        ax.set_ylabel(y_lab.format(names[0] if names is not None else 'Centre'))
+
+        if units is not None:
+            x_lab = '$t$/{}'.format(units)
+        else:
+            x_lab = 'Time'
+        ax.set_xlabel(x_lab)
+
+        # Request a legend and display
+        if names is not None:
+            ax.legend()
 
     def display_energy_delta(self, title="Energy Delta", g=1.0, divisor=1.0, units=None, helio=False):
         # Reform the data for converstion
@@ -144,8 +188,8 @@ class Display:
         mass = self.h5f['/mass'][()]    # Get mass - note mass can change if particles combine or are ejected
 
         # Cater for particle combinations
-        mass[numpy.isnan(mass)]=0.0
-        states[numpy.isnan(states)]=0.0
+        mass[np.isnan(mass)]=0.0
+        states[np.isnan(states)]=0.0
         
         # Convert the time
         time = time / divisor
@@ -164,7 +208,6 @@ class Display:
 
         # Plot delta against time
         ax.plot(time, (energy - energy[0]) / energy[0])
-        # Finished with the data
 
         ax.set_ylabel('$\Delta$')
         if units is not None:
@@ -203,7 +246,7 @@ class Display:
                 sos = butter(6, 1.0/smooth, output='sos')
                 filter = True
             except Exception as e:
-                print("Scipy not installed - falling back to numpy polynomial fit")
+                print("Scipy not installed - falling back to np polynomial fit")
                 print(e)
                 filter = False
 
@@ -215,10 +258,10 @@ class Display:
                     ecc[:,i] = sosfiltfilt(sos, ecc[:,i])
                     inc[:,i] = sosfiltfilt(sos, inc[:,i])
                 else:
-                    pol = numpy.polynomial.chebyshev.chebfit(time, ecc[:,i], n)
-                    ecc[:,i] = numpy.polynomial.chebyshev.chebval(time, pol)
-                    pol = numpy.polynomial.chebyshev.chebfit(time, inc[:,i], n)
-                    inc[:,i] = numpy.polynomial.chebyshev.chebval(time, pol)
+                    pol = np.polynomial.chebyshev.chebfit(time, ecc[:,i], smooth)
+                    ecc[:,i] = np.polynomial.chebyshev.chebval(time, pol)
+                    pol = np.polynomial.chebyshev.chebfit(time, inc[:,i], smooth)
+                    inc[:,i] = np.polynomial.chebyshev.chebval(time, pol)
 
             ax0.plot(time, ecc[:,i], label=names[i] if names is not None else None)
             ax1.plot(time, inc[:,i])

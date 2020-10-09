@@ -22,12 +22,10 @@ class Tools(object):
     # Balance the linear momentum, by either adjusting the velocity of particle 0, or the 
     # velocities of all particles
     def balance_momentum(velocities, masses, first_particle=False):
-        n_rows, n_cols = velocities.shape
-        if n_cols % 3 == 0 and n_rows == 1:
-            mom = np.zeros(3)
-            for m in masses:
-                for i in range(0, 3):
-                    mom[i] += m * velocities[n_cols // 3 + i]
+        mom = np.zeros(3)
+        for p, m in enumerate(masses):
+            for i in range(0, 3):
+                mom[i] += m * velocities[p * 3 + i]
 
         if not first_particle:
             return mom / -masses.sum()
