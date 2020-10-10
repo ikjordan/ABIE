@@ -1,18 +1,14 @@
-import h5py
 import math
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from cycler import cycler
-from ABIE import snapshot_convert
-from ABIE import Tools
+from h5 import H5
 
 class Display:
-    def __init__(self, input_file=None):
+    def __init__(self, h5=None):
         self.next_figure = 1
-        self.h5f = None
-        if input_file:
-            self.set_data(input_file)
+        self.h5 = h5
 
 
     def _get_figure(self):
@@ -22,54 +18,24 @@ class Display:
         return fig
 
 
-    def set_data(self, input_file):
-        # Close previous file, if it exists
-        self.close()
-
+    def set_data(self, h5):
         # Caches the h5 data
-        converted = snapshot_convert(input_file)
-        if converted:
-            self.h5f = h5py.File(converted[0], 'r')
-        else:
-            self.h5f = None
-    
-    def close(self):
-        # If a file is open, then close it
-        if self.h5f:
-            self.h5f.close()
-            self.h5f = None
-            
-
-    def _package(self):
-        # Package the positions and velocities
-        ticks, particles = self.h5f['/x'][()].shape
-        return np.concatenate((np.dstack((self.h5f['/x'][()], self.h5f['/y'][()], self.h5f['/z'][()])),
-                               np.dstack((self.h5f['/vx'][()], self.h5f['/vy'][()], self.h5f['/vz'][()]))), 
-                               axis=1).reshape(ticks, 6*particles) 
+        self.h5 = h5
 
 
     def show(self):
-        # Close the data set
-        self.close()
-
         # Show all of the figures
         if self.next_figure > 1:
             plt.show()
 
 
-    def display_3d_data(self, hash2names=None, names=None, title="Trajectory", scatter=False, bary=False, equal=False):
-        # Reform the data for possible converstion
-        states = self._package()
-
+    def display_3d_data(self, hash2names=None, names=None, title="Trajectory", scatter=False, to_helio=False, equal=False):
         # Use the hash (if provided) in favour of the supplied names
         if hash2names is not None:
-            names = []
-            for hash in self.h5f['/hash'][(0)]:
-                names.append(hash2names.get(hash,"Unknown"))
+            names = self.h5.hash_to_names(hash2names)
 
         # Convert to heliocentric coords if requested
-        if bary:
-            states = Tools.move_to_helio(states)
+        states = self.h5.get_state_heliocentric() if to_helio else self.h5.get_state()
 
         fig = self._get_figure()
         ax = fig.gca(projection='3d')
@@ -101,23 +67,18 @@ class Display:
             ax.legend(markerscale=30 if scatter else 1)
 
 
-    def display_2d_data(self, hash2names=None, names=None, title="Trajectory", scatter=False, bary=False, equal=True):
-        # Reform the data for possible converstion
-        states = self._package()
-
+    def display_2d_data(self, hash2names=None, names=None, title="Trajectory", scatter=False, to_helio=False, equal=True, box=None):
         # Use the hash (if provided) in favour of the supplied names
         if hash2names is not None:
-            names = []
-            for hash in self.h5f['/hash'][(0)]:
-                names.append(hash2names.get(hash,"Unknown"))
-        
+            names = self.h5.hash_to_names(hash2names)
+
         # Convert to heliocentric coords if requested
-        if bary:
-            states = Tools.move_to_helio(states)
+        states = self.h5.get_state_heliocentric() if to_helio else self.h5.get_state()
 
         self._get_figure()
         ax = plt.subplot(111)
         ax.set_title(title)
+
         _, width = states.shape
         for i in range(0, width // 6): 
             # Plot x and y positions for all objects
@@ -126,49 +87,42 @@ class Display:
             else:
                 ax.plot(states[:,3*i], states[:,3*i+1], label=names[i] if names is not None else None)
 
-        if equal:
+        # Configure axes
+        if box is not None:
+            ax.set_xlim(box[0], box[1])
+            ax.set_ylim(box[2], box[3])
+        elif equal:
             ax.axis('equal')
 
         # Request a legend and display
         if names is not None:
             ax.legend(markerscale=30 if scatter else 1)
 
-    def display_radius(self, hash2names=None, names=None, title="Trajectory", divisor=1.0, units=None, bary=False):
-        # Reform the data for possible converstion
-        states = self._package()
 
+    def display_radius(self, hash2names=None, names=None, title="Trajectory", divisor=1.0, units=None, to_helio=True, ignore_first=True):
         # Get time and convert
-        time = self.h5f['/time'][()]    # Get time
+        time = self.h5.get_time()
         time = time / divisor
 
         # Use the hash (if provided) in favour of the supplied names
         if hash2names is not None:
-            names = []
-            for hash in self.h5f['/hash'][(0)]:
-                names.append(hash2names.get(hash,"Unknown"))
-        
-        # Convert to heliocentric coords if requested
-        if bary:
-            states = Tools.move_to_helio(states)
+            names = self.h5.hash_to_names(hash2names)
 
-        # Create the output data
-        ticks, width = states.shape
-        radii = np.zeros(shape=(ticks, width))
-
-        for t in range(0, ticks):
-            for i in range(1, width // 6):
-                # Calulate the magnitude of the position vector and convert to km
-                radii[t, i-1] = np.linalg.norm((states[t,3*i], states[t,3*i+1], states[t,3*i+2]))/1000
+        radii = self.h5.get_radii(to_helio)
+        _, particles = radii.shape
 
         self._get_figure()
         ax = plt.subplot(111)
         ax.set_title(title)
-        for i in range(1, width // 6): 
+        for i in range(1 if ignore_first else 0, particles): 
             # Plot radius against time for all particles, excluding the first particle
-            ax.plot(time, (radii[:,i-1]), label=names[i] if names is not None else None)
+            ax.plot(time, (radii[:,i]), label=names[i] if names is not None else None)
         
-        y_lab = "Distance from {} /km"
-        ax.set_ylabel(y_lab.format(names[0] if names is not None else 'Centre'))
+        if ignore_first:
+            y_lab = "Distance from {} /km"
+            ax.set_ylabel(y_lab.format(names[0] if names is not None else 'Centre'))
+        else:
+            ax.set_ylabel("Distance from centre /km")
 
         if units is not None:
             x_lab = '$t$/{}'.format(units)
@@ -180,26 +134,15 @@ class Display:
         if names is not None:
             ax.legend()
 
-    def display_energy_delta(self, title="Energy Delta", g=1.0, divisor=1.0, units=None, helio=False):
-        # Reform the data for converstion
-        states = self._package()
-
-        time = self.h5f['/time'][()]    # Get time
-        mass = self.h5f['/mass'][()]    # Get mass - note mass can change if particles combine or are ejected
-
-        # Cater for particle combinations
-        mass[np.isnan(mass)]=0.0
-        states[np.isnan(states)]=0.0
+    def display_energy_delta(self, title="Energy Delta", G=1.0, divisor=1.0, units=None, to_bary=False):
+        # Get time
+        time = self.h5.get_time()
         
         # Convert the time
         time = time / divisor
 
-        if helio:
-            # Transform to barycentric coords
-            states = Tools.helio2bary(states, mass)
-
-        # Calculate the total energy against time
-        energy = Tools.compute_energy(states, mass, g)
+        # Get energy against time
+        energy = self.h5.compute_energy(G, to_bary)
 
         # Plot energy delta
         self._get_figure()
@@ -218,11 +161,11 @@ class Display:
 
 
     def display_2d_e_and_i(self, hash2names=None, names=None, smooth = False, title="$e$ and $I$", divisor=1.0, units=None):
-        ecc = self.h5f['/ecc'][()]     # Get eccentricity
-        inc = self.h5f['/inc'][()]     # Get inclinations 
-        time = self.h5f['/time'][()]   # Get time - in days
+        time = self.h5.get_time()
+        ecc = self.h5.get_eccentricity()
+        inc = self.h5.get_inclination()
 
-        # Convert the time to millions of years
+        # Convert the time 
         time = time /divisor
 
         # Convert the inclination to degrees
@@ -230,9 +173,7 @@ class Display:
 
         # Use the hash (if provided) in favour of the supplied names
         if hash2names is not None:
-            names = []
-            for hash in self.h5f['/hash'][(0)]:
-                names.append(hash2names.get(hash,"Unknown"))
+            names = self.h5.hash_to_names(hash2names)
 
         fig = self._get_figure()
         ax0 = plt.subplot(211)

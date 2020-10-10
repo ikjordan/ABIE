@@ -14,6 +14,7 @@ except ImportError:
     path.append(dirname(path[0]))
     from ABIE import ABIE
 
+from h5 import H5
 from display import Display
 
 def main():
@@ -119,10 +120,10 @@ def execute_simulation(output_file):
     sim.integrate(30)  # the argument `30` is optional if `sim.t_end` is specified in the context
 
     sim.stop()
-
-    d = Display(output_file)
+    h5 = H5(output_file)
+    d = Display(h5)
     d.display_3d_data(hash2names=hash2names, title=integrator)
-    d.display_energy_delta(g=sim.CONST_G, helio=(integrator=='WisdomHolman'))
+    d.display_energy_delta(G=sim.CONST_G, to_bary=(integrator=='WisdomHolman'))
     d.show()
 
 if __name__ == "__main__":

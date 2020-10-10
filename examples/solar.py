@@ -14,6 +14,7 @@ except ImportError:
     path.append(dirname(path[0]))
     from ABIE import ABIE
 
+from h5 import H5
 from display import Display
 
 def main():
@@ -96,11 +97,12 @@ def execute_simulation(output_file, million=False):
     sim.stop()
 
     # display the data
+    h5 = H5(output_file)
     d = Display()
-    d.set_data(output_file)
-    d.display_2d_data(names=names, title=integrator, scatter=True, bary=(integrator!='WisdomHolman'))
-    d.display_3d_data(names=names, title=integrator, scatter=True, bary=(integrator!='WisdomHolman'), equal=True)
-    d.display_energy_delta(g=sim.CONST_G, divisor=divisor, units=units, helio=(integrator=='WisdomHolman'))
+    d.set_data(h5)
+    d.display_2d_data(names=names, title=integrator, scatter=True, to_helio=(integrator!='WisdomHolman'))
+    d.display_3d_data(names=names, title=integrator, scatter=True, to_helio=(integrator!='WisdomHolman'), equal=True)
+    d.display_energy_delta(G=sim.CONST_G, divisor=divisor, units=units, to_bary=(integrator=='WisdomHolman'))
     if million:
         d.display_2d_e_and_i(names=names, divisor=divisor, units=units, smooth=80.0)
     d.show()

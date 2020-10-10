@@ -34,7 +34,7 @@ class Tools(object):
         
 
     @staticmethod
-    def helio2bary(x, masses):
+    def move_to_bary(x, masses):
         """
         Transform position and velocity data spanning multiple times
         from heliocentric to barycentric coordinates.

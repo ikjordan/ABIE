@@ -320,11 +320,6 @@ class ABIE(object):
             pos[0] = x
             pos[1] = y
             pos[2] = z
-        if x is not None and y is not None and z is not None:
-            pos = np.empty(3, dtype=np.double)
-            pos[0] = x
-            pos[1] = y
-            pos[2] = z
         if vx is not None and vy is not None and vz is not None:
             vel = np.empty(3, dtype=np.double)
             vel[0] = vx

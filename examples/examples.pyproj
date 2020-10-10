@@ -22,7 +22,8 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="display.py">
+    <Compile Include="display.py" />
+    <Compile Include="h5.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="run.py" />
