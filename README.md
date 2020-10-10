@@ -18,32 +18,33 @@ from Python programatically *done*
 ## Notes
 1. It appears that major changes were made to the code to introduce the accelerated C integrators. This broke
 some of the older integrator inplementations in Python. These issues have now been addressed, and
-all integrators should now work in `numpy` mode
-2. Addressed issues with timestep and energy delta calculations in the `Wisdom Holman` integrator
-3. The package configuration has been modified, so that code can be called in the same way, regardless
+all integrators should now work in both `ctypes` (where implemented) and `numpy` mode
+2. Issues surrounding division that broke execution when using Python 3 have been corrected
+3. Addressed issues with timestep and energy delta calculations in the `Wisdom Holman` integrator
+4. The package configuration has been modified, so that code can be called in the same way, regardless
 of whether the `astroabie` package has been installed. Examples have been moved into a separate
 directory
-4. Added an option to control the amount of data written to the console during a run
-5. Loading the shared library from the installed package has been refined, to allow for instances where
+5. Added an option to control the amount of data written to the console during a run
+6. Loading the shared library from the installed package has been refined, to allow for instances where
 the library name is decorated by the architecture during installation
-6. A MS Visual Studio 2019 solution is provided. This creates a DLL file from the C code, and allows easy 
+7. A MS Visual Studio 2019 solution is provided. This creates a DLL file from the C code, and allows easy 
 access to the debugger for both the Python and C code 
-7. ABIE uses C Variable Length Arrays (VLA), which are not supported by the MSVC compiler (MSVC is not
+8. ABIE uses C Variable Length Arrays (VLA), which are not supported by the MSVC compiler (MSVC is not
 completely C99 compliant). Therefore the LLVM (`Clang-cl`) tool chain is used with Visual Studio 2019
-8. The code has been tested under MS Windows 10, MinGW 64-bit running on Windows 10, Ubuntu 20.04 running in a VirtualBox VM and a 4MB Raspberry PI 4 
-running Raspberry Pi OS
-9. I do not have acccess to an Apple Mac, so I may have inadvertantly broken support for that platform
-10. To make intellisense work correctly for C99 code with `Clang` an additional option of `-std=c99` is set. This is valid in
-`Clang`, and triggers intellisense to work correctly, but is ignored in `Clang-cl`, and so causes a 
-warning to be generated
-11. Clang supports 80 bit `long double`, but in Clang-cl `long double` is set to 64 bits for 
+9. The code has been tested under MS Windows 10, MinGW 64-bit running on Windows 10, Ubuntu 20.04 running
+in a VirtualBox VM and a 4GB Raspberry PI 4 running Raspberry Pi OS
+10. I do not have acccess to an Apple Mac, so I may have inadvertantly broken support for that platform
+11. To make intellisense work correctly for C99 code with `Clang` an additional option of `-std=c99` is set. 
+This is valid in `Clang`, and triggers intellisense to work correctly, but is ignored in `Clang-cl`, and so
+causes a warning to be generated
+12. Clang supports 80 bit `long double`, but in Clang-cl `long double` is set to 64 bits for 
 compatibility with MSVC. Use MinGW64 to build a DLL that will provide 80 bit `long double` support under Windows
-12. The C files in the project are built into a DLL. I failed to configure `setup.py` to automatically 
+13. The C files in the project are built into a DLL. I failed to configure `setup.py` to automatically 
 trigger a build using `Clang`, so before running `setup.py` `libabie.dll` should be built in Visual Studio.
 The DLL will then be packaged correctly
-13. Under MinGW 64bit the DLL (`libabie.dll`) can be built by invoking `make`. This should be done before 
+14. Under MinGW 64bit the DLL (`libabie.dll`) can be built by invoking `make`. This should be done before 
 running `setup.py`. The DLL will then be packaged correctly
-14. Note that there appears to be an issue in on the Raspberry Pi, where specifying dependencies can cause 
+15. Note that there appears to be an issue in on the Raspberry Pi, where specifying dependencies can cause 
 `Cython` to fail. The workaround is to comment the dependencies out from `setup.py` and install them
 manually
 
@@ -117,9 +118,13 @@ using `Matplotlib`
 #### `display.py`
 Helper class to display multiple graphs using `matplotlib`  
 
+#### `h5.py`
+Helper class to perform transforms on the data within the `h5` file
+
 #### `tools.py`
 Added helper methods to calculate residual momentum in a system, and to convert
-between coordinate systems
+between coordinate systems  
+
 ### The original README follows:
 
 # Moving Planets Around (MPA) Project
