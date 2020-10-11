@@ -108,7 +108,7 @@ def execute_simulation(output_file):
 
     d = Display(h5)
     d.display_2d_data(names=names, title=integrator, scatter=True, equal=True, to_helio=(integrator!='WisdomHolman'))
-    d.display_radius(names=names, title=integrator, divisor=divisor, units=units, to_helio=(integrator!='WisdomHolman'))
+    d.display_semi_major(names=names, title=integrator, divisor=divisor, units=units)
     d.display_2d_e_and_i(names=names, divisor=divisor, units=units)
     d.display_energy_delta(G=G, divisor=divisor, units=units, to_bary=(integrator=='WisdomHolman'))
 
@@ -116,13 +116,13 @@ def execute_simulation(output_file):
 
     box = np.array((-40, 40, 0, 0))
 
-    # Get the radii to calculate the bounding box
-    radii = h5.get_radii(to_helio=(integrator!='WisdomHolman'))
-    box[2] = min(np.amin(radii[:,1]), np.amin(radii[:,2])) - 2
-    box[3] = max(np.amax(radii[:,1]), np.amax(radii[:,2])) + 2
+    # Get the semi-major axis to calculate the bounding box
+    semi = h5.get_semi_major()
+    box[2] = min(np.amin(semi[:,1]), np.amin(semi[:,2])) - 2
+    box[3] = max(np.amax(semi[:,1]), np.amax(semi[:,2])) + 2
     
     d.display_2d_data(names=names, title=integrator, to_helio=(integrator!='WisdomHolman'), box=box)
-    d.display_radius(names=names, title=integrator, divisor=divisor, units=units, to_helio=(integrator!='WisdomHolman'))
+    d.display_semi_major(names=names, title=integrator, divisor=divisor, units=units)
     d.display_2d_e_and_i(names=names, divisor=divisor, units=units)
     d.show()
 

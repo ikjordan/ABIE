@@ -99,7 +99,7 @@ class Display:
             ax.legend(markerscale=30 if scatter else 1)
 
 
-    def display_radius(self, hash2names=None, names=None, title="Trajectory", divisor=1.0, units=None, to_helio=True, ignore_first=True):
+    def display_semi_major(self, hash2names=None, names=None, title="Trajectory", divisor=1.0, units=None, ignore_first=True):
         # Get time and convert
         time = self.h5.get_time()
         time = time / divisor
@@ -108,15 +108,16 @@ class Display:
         if hash2names is not None:
             names = self.h5.hash_to_names(hash2names)
 
-        radii = self.h5.get_radii(to_helio)
-        _, particles = radii.shape
+        semi = self.h5.get_semi_major()
+        _, particles = semi.shape
 
         self._get_figure()
         ax = plt.subplot(111)
         ax.set_title(title)
+
+        # Plot semi-major axis against time for all particles, optionally excluding the first particle
         for i in range(1 if ignore_first else 0, particles): 
-            # Plot radius against time for all particles, excluding the first particle
-            ax.plot(time, (radii[:,i]), label=names[i] if names is not None else None)
+            ax.plot(time, (semi[:,i]), label=names[i] if names is not None else None)
         
         if ignore_first:
             y_lab = "Distance from {} /km"

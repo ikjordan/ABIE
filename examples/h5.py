@@ -78,20 +78,24 @@ class H5:
         return Tools.compute_energy(state, mass, G)
 
 
-    def get_radii(self, to_helio=False):
+    def get_semi_major(self):
+        return self.h5f['/semi'][()]
+
+
+    def get_distance(self, to_helio=False):
         # Transform if necessary
         state = self.get_state_heliocentric() if to_helio else self.get_state()
 
-        # Create the radii for each object, apart from the first
+        # Calculate the distance for each object from the coordinate centre
         ticks, width = state.shape
-        radii = np.zeros(shape=(ticks, width // 6))
+        dist = np.zeros(shape=(ticks, width // 6))
 
         for t in range(0, ticks):
             for i in range(0, width // 6):
-                # Calulate the magnitude of the position vector
-                radii[t, i] = np.linalg.norm((state[t,3*i], state[t,3*i+1], state[t,3*i+2]))
+                # Calculate the magnitude of the position vector
+                dist[t, i] = np.linalg.norm((state[t,3*i], state[t,3*i+1], state[t,3*i+2]))
 
-        return radii
+        return dist
 
 
     def hash_to_names(self, hash2names):
