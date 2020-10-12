@@ -1,6 +1,5 @@
 import h5py
 import numpy as np
-import matplotlib.pyplot as plt
 from ABIE import snapshot_convert
 from ABIE import Tools
 
@@ -98,10 +97,27 @@ class H5:
         return dist
 
 
+    def get_angle(self):
+        # Returns the angle between the position vector of (object 2 - object 1) 
+        # and (object 3 - object 1)
+        ticks, particles = self.h5f['/x'][()].shape
+        t = np.dstack((self.h5f['/x'][()][:, 0:3], self.h5f['/y'][()][:, 0:3], self.h5f['/z'][()][: , 0:3]))
+
+        # Subtract the position of object 1
+        v1 = t[:, 1, :] - t[:, 0, :]
+        v2 = t[:, 2, :] - t[:, 0, :]
+
+        ang = np.empty(ticks)
+        for i in range(0, ticks):
+            ang[i] = np.degrees(np.arccos(np.clip(np.dot(v1[i] / np.linalg.norm(v1[i]),
+                                                         v2[i] / np.linalg.norm(v2[i])),
+                                                  -1.0, 1.0)))
+        return ang
+
+
     def hash_to_names(self, hash2names):
         # Return a list of names from the supplied map of hashes to names
         names = []
         for hash in self.h5f['/hash'][(0)]:
             names.append(hash2names.get(hash,"Unknown"))
         return names
-

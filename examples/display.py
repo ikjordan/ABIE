@@ -1,8 +1,5 @@
-import math
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from cycler import cycler
 from h5 import H5
 
 class Display:
@@ -111,7 +108,7 @@ class Display:
         semi = self.h5.get_semi_major()
         _, particles = semi.shape
 
-        self._get_figure()
+        fig = self._get_figure()
         ax = plt.subplot(111)
         ax.set_title(title)
 
@@ -125,6 +122,18 @@ class Display:
         else:
             ax.set_ylabel("Distance from centre /km")
 
+        # Display the angle between bodies 2 and 3 on the same axis
+        if particles > 2:
+            ax2 = ax.twinx()
+            ang = self.h5.get_angle()
+            col = 'gray'
+
+            ax2.tick_params(axis='y', labelcolor=col)
+            ax2.set_ylabel('Angle between objects', color=col)
+            ax2.yaxis.set_major_formatter('${x:n}\degree$')
+            ax2.plot(time, ang, color=col, label="Angle")
+            ax2.legend(loc=1)
+
         if units is not None:
             x_lab = '$t$/{}'.format(units)
         else:
@@ -133,7 +142,10 @@ class Display:
 
         # Request a legend and display
         if names is not None:
-            ax.legend()
+            ax.legend(loc=2)
+
+        fig.tight_layout()
+
 
     def display_energy_delta(self, title="Energy Delta", G=1.0, divisor=1.0, units=None, to_bary=False):
         # Get time
@@ -153,7 +165,7 @@ class Display:
         # Plot delta against time
         ax.plot(time, (energy - energy[0]) / energy[0])
 
-        ax.set_ylabel('$\Delta$')
+        ax.set_ylabel(r'$\Delta\/Energy$')
         if units is not None:
             x_lab = '$t$/{}'.format(units)
         else:
@@ -170,7 +182,7 @@ class Display:
         time = time /divisor
 
         # Convert the inclination to degrees
-        inc = inc * 180 / math.pi
+        inc = np.degrees(inc)
 
         # Use the hash (if provided) in favour of the supplied names
         if hash2names is not None:
