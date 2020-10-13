@@ -37,8 +37,8 @@ def execute_simulation(output_file):
     # integrator = 'LeapFrog'
     # integrator = 'AdamsBashforth'
     # integrator = 'RungeKutta'
-    integrator = 'WisdomHolman'
-    # integrator = 'GaussRadau15'
+    # integrator = 'WisdomHolman'
+    integrator = 'GaussRadau15'
 
     G = 6.67430e-20   # Unit of length is km
 
@@ -48,7 +48,8 @@ def execute_simulation(output_file):
 
     # Add saturn + Epimetheus & Janus
     names = ['Saturn', 'Epimetheus', 'Janus']
-    mass = np.array([5.684766319852324e26, 5.266e17, 1.8975e18])
+    moon_mult = 1.0   # Change to investigate the effect of larger moons
+    mass = np.array([5.684766319852324e26, 5.266e17*moon_mult, 1.8975e18*moon_mult])
  
     # Data for Epimetheus - have swapped semi major axis quoted on Wikipedia with Janus
     xe = 1.5146e5
@@ -69,7 +70,7 @@ def execute_simulation(output_file):
     # Trigger simulation
     time_step = 60                  # 1 minute
     out_freq = 60 * 4 * time_step   # log data once every 4 hours
-    run_time = 10000 * Te           # Integrate for 10000 periods
+    run_time = 5000 * Te            # Integrate for 5000 periods
 
     run(mass, pos, vel, names, integrator, acceleration_method, G, 
         time_step, out_freq, run_time, output_file)

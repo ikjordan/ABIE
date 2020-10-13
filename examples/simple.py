@@ -43,11 +43,25 @@ def main():
     # Simple two body
     mass = np.array([1.0, 1.0])
     pos = np.array([-1.0, 0.0, 0.0, 1.0, 0.0, 0.0])
-    vel = np.array([ 0.0, -0.5, 0.0, 0.0, 0.5, 0.0])
+    vel = np.array([ 0.0, -0.48, 0.0, 0.0, 0.48, 0.0])
     names = ['One', 'Two']
     output_file.append("simple_2.h5")
     output_name.append("Simple 2 Body")
     scatter.append(True)
+
+    run(mass, pos, vel, names, integrator, method, G, time_step, out_freq, end_time, output_file[count])
+
+    # 3 body figure of 8
+    count += 1
+    time_step = 0.0001
+
+    mass = np.array([1.0, 1.0, 1.0])
+    pos = np.array([0.9700436, -0.24308753, 0.0, -0.9700436, 0.24308753, 0.0, 0.0, 0.0, 0.0])
+    vel = np.array([0.466203685, 0.43236573, 0.0, 0.466203685, 0.43236573, 0.0, -0.93240737, -0.86473146, 0.0])
+    names = ['One', 'Two', 'Three']
+    output_file.append("3_body_8.h5")
+    output_name.append("3 Body Fig 8")
+    scatter.append(False)
 
     run(mass, pos, vel, names, integrator, method, G, time_step, out_freq, end_time, output_file[count])
 
@@ -75,6 +89,21 @@ def main():
     names = ['One', 'Two', 'Three']
     output_file.append("Pi_3_body.h5")
     output_name.append("Pythagorean 3 Body")
+    scatter.append(False)
+
+    run(mass, pos, vel, names, integrator, method, G, time_step, out_freq, end_time, output_file[count])
+
+    # 5 body figure of 8
+    end_time = 12
+    count += 1
+    time_step = 0.0001
+
+    mass = np.array([1.0, 1.0, 1.0, 1.0, 1.0])
+    pos = np.array([1.657666, 0.0, 0.0, 0.439775, -0.169717, 0.0, -1.268608, -0.267651, 0.0, -1.268608, 0.267651, 0.0, 0.439775, 0.169717, 0.0])
+    vel = np.array([0.0, -0.593786, 0.0, 1.822785, 0.128248, 0.0, 1.271564, 0.168645, 0.0, -1.271564, 0.168645, 0.0, -1.822785, 0.128248, 0.0])
+    names = ['One', 'Two', 'Three', 'Four', 'Five']
+    output_file.append("5_body_8.h5")
+    output_name.append("5 Body Fig 8")
     scatter.append(False)
 
     run(mass, pos, vel, names, integrator, method, G, time_step, out_freq, end_time, output_file[count])
