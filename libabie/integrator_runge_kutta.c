@@ -46,6 +46,7 @@ void integrate_rk(real *y0, real *dy0, real *masses, real *radii, size_t N, real
     free(k3);
     free(k4);
     free(vec_tmp);
+    free(vec);
     return;
 }
 

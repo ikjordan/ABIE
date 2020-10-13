@@ -225,7 +225,7 @@ real cross_norm(const real *vec1, const real *vec2) {
 
 int code_inited = 0;
 int initialize_code(double _G, double _C, int _N_MAX, int _MAX_N_CE, int _MAX_N_COLLISIONS) {
-    if (code_inited > 0) return 0;
+    if ((code_inited > 0) && (_N_MAX == N_global)) return 0;
     printf("Initializing the code...");
     // define constants and flags
     MAX_N_CE = _MAX_N_CE;
@@ -239,8 +239,14 @@ int initialize_code(double _G, double _C, int _N_MAX, int _MAX_N_CE, int _MAX_N_
     G_global = (real) _G;
     C_global = (real) _C;
 
-    // allocate
-    // TODO: reallocate the memory if N changes
+    // Free memory if N has changed
+    if (_N_MAX != N_global)
+    {
+        finalize_code();
+        N_global = (size_t)_N_MAX;
+    }
+    
+    // Allocate memory
     if (pos_global == NULL) pos_global = (real *) malloc(3 * _N_MAX * sizeof(real));
     if (vel_global == NULL) vel_global = (real *) malloc(3 * _N_MAX * sizeof(real));
     if (ext_acc_global == NULL) {
@@ -379,13 +385,22 @@ size_t set_additional_forces(int N, double ext_acc[]) {
 }
 
 int finalize_code() {
-    if (pos_global != NULL) free(pos_global);
-    if (vel_global != NULL) free(vel_global);
-    if (m_vec_global != NULL) free(m_vec_global);
-    if (r_vec_global != NULL) free(r_vec_global);
-    if (ext_acc_global != NULL) free(ext_acc_global);
-    if (buf_ce_events != NULL) free(buf_ce_events);
-    if (buf_collision_events != NULL) free(buf_collision_events);
+    free(pos_global);
+    free(vel_global);
+    free(m_vec_global);
+    free(r_vec_global);
+    free(ext_acc_global);
+    free(buf_ce_events);
+    free(buf_collision_events);
+
+    pos_global = NULL;
+    vel_global = NULL;
+    m_vec_global = NULL;
+    r_vec_global = NULL;
+    ext_acc_global = NULL;
+    buf_ce_events = NULL;
+    buf_collision_events = NULL;
+
     // t = 0.0;
     // t_end = 0.0;
     //
