@@ -4,7 +4,7 @@ from ABIE import snapshot_convert
 from ABIE import Tools
 
 class H5:
-    def __init__(self, input_file):
+    def __init__(self, input_file=None):
         self.h5f = None
         if input_file:
             self.set_data(input_file)
@@ -20,13 +20,14 @@ class H5:
             self.h5f = h5py.File(converted[0], 'r')
         else:
             self.h5f = None
-    
+
+
     def close(self):
         # If a file is open, then close it
         if self.h5f:
             self.h5f.close()
             self.h5f = None
-            
+
 
     def get_state(self):
         # Package the positions and velocities

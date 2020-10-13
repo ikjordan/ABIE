@@ -18,11 +18,6 @@ from h5 import H5
 from display import Display
 
 def main():
-    execute_simulation('abc.h5')
-
-def execute_simulation(output_file):
-    # create an ABIE instance
-    sim = ABIE()
 
     # Select integrator. Possible choices are 'GaussRadau15', 'RungeKutta', etc.
     # integrator = 'Euler'
@@ -31,65 +26,96 @@ def execute_simulation(output_file):
     # integrator =  'RungeKutta'
     # integrator = 'WisdomHolman'
     integrator = 'GaussRadau15'
-    sim.integrator = integrator
 
-    # Use the CONST_G parameter to set units
-    sim.CONST_G = 1
 
-    # The underlying implementation of the integrator ('ctypes' or 'numpy')
-    sim.acceleration_method = 'ctypes'
-    #sim.acceleration_method = 'numpy'
+    count = 0
+    output_file = []
+    output_name = []
+    scatter = []
 
-    # Pure 3 body
-    #sim.add(mass=1.0, x= 1.000000000000000, y= 0.000000000000000, z= 0.000000000000000, vx= 0.000000000000000, vy= 0.759835685651593, vz= 0.000000000000000, name='One')
-    #sim.add(mass=1.0, x=-0.500000000000000, y= 0.866025403784439, z= 0.000000000000000, vx=-0.658037006476246, vy=-0.379917842825796, vz= 0.000000000000000, name='Two')
-    #sim.add(mass=1.0, x=-0.500000000000000, y=-0.866025403784438, z= 0.000000000000000, vx= 0.658037006476246, vy=-0.379917842825797, vz= 0.000000000000000, name='Three')
+    G = 1
+    method = 'ctypes'
+    # method = 'numpy'
+    time_step = 0.001
+    out_freq = 0.01
+    end_time = 100
 
-    # Velocity perturbation on pure 3 body
-    sim.add(mass=1.0, x= 1.000000000000000, y= 0.000000000000000, z= 0.000000000000000, vx= 0.000100000000000, vy= 0.759835685651593, vz= 0.000000000000000, name='One')
-    sim.add(mass=1.0, x=-0.500000000000000, y= 0.866025403784439, z= 0.000000000000000, vx=-0.658037006476246, vy=-0.379917842825796, vz= 0.000000000000000, name='Two')
-    sim.add(mass=1.0, x=-0.500000000000000, y=-0.866025403784438, z= 0.000000000000000, vx= 0.658037006476246, vy=-0.379917842825797, vz= 0.000000000000000, name='Three')
+    # Simple two body
+    mass = np.array([1.0, 1.0])
+    pos = np.array([-1.0, 0.0, 0.0, 1.0, 0.0, 0.0])
+    vel = np.array([ 0.0, -0.5, 0.0, 0.0, 0.5, 0.0])
+    names = ['One', 'Two']
+    output_file.append("simple_2.h5")
+    output_name.append("Simple 2 Body")
+    scatter.append(True)
 
-    # Velocity perturbation on pure 3 body
-    #sim.add(mass=1.0, x= -1.0, y= 0.0, z= 0.0, vx= 0.0, vy= -0.5, vz= 0.0, name='One')
-    #sim.add(mass=1.0, x=  1.0, y= 0.0, z= 0.0, vx= 0.0, vy=  0.5, vz= 0.0, name='Two')
+    run(mass, pos, vel, names, integrator, method, G, time_step, out_freq, end_time, output_file[count])
 
-    # The output file name. If not specified, the default is 'data.hdf5'
-    sim.output_file = output_file
-    sim.collision_output_file = 'abc.collisions.txt'
-    sim.close_encounter_output_file = 'abc.ce.txt'
+    # Perturbed 3 body
+    count += 1
+    time_step = 0.0001
 
-    # Build a dictionary mapping hashes to names
-    hash2names = {}
-    for particle in sim.particles:
-        if particle.name is not None:
-            hash2names[particle.hash] = particle.name
+    mass = np.array([1.0, 1.0, 1.0])
+    pos = np.array([1.0, 0.0, 0.0, -0.5, 0.866025403784439, 0.0, -0.5, -0.866025403784438, 0.0])
+    vel = np.array([0.0001, 0.759835685651593, 0.0, -0.658037006476246, -0.379917842825796, 0.0, 0.658037006476246, -0.379917842825797, 0.0])
+    names = ['One', 'Two', 'Three']
+    output_file.append("3_body_pert.h5")
+    output_name.append("3 Body Perturbed")
+    scatter.append(False)
 
-    # The output frequency
-    sim.store_dt = 0.01
+    run(mass, pos, vel, names, integrator, method, G, time_step, out_freq, end_time, output_file[count])
+
+    # Pythagorean 3 body
+    end_time = 62
+    count += 1
+    time_step = 0.00000001
+    mass = np.array([3.0, 4.0, 5.0])
+    pos = np.array([1.0, 3.0, 0.0, -2.0, -1.0, 0.0, 1.0, -1.0, 0.0])
+    vel = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+    names = ['One', 'Two', 'Three']
+    output_file.append("Pi_3_body.h5")
+    output_name.append("Pythagorean 3 Body")
+    scatter.append(False)
+
+    run(mass, pos, vel, names, integrator, method, G, time_step, out_freq, end_time, output_file[count])
+
+    # Display all of the results
+    h5 = H5()
+    d = Display(h5)
+    for i, file in enumerate(output_file):
+        h5.set_data(file)
+        title = output_name[i] +  ": " + integrator
+        d.display_2d_data(names=names, scatter=scatter[i], title=title)
+        d.display_energy_delta(G=G, title="Energy Delta: " + title, to_bary=(integrator=='WisdomHolman'))
+    h5.close()
+    d.show()
+
+
+
+def run(mass, pos, vel, names, integrator, method, G, time_step, out_freq, end_time, output):
+    sim = ABIE()
 
     # The integration timestep (does not apply to Gauss-Radau15)
-    sim.h = 0.001
+    sim.h = time_step
 
-    # The size of the buffer. The buffer is full when `buffer_len` outputs are
-    # generated. In this case, the collective output will be flushed to the HDF5
-    # file, generating a `Step#n` HDF5 group
+    # The output frequency
+    sim.store_dt = out_freq
+
     sim.buffer_len = 10000
+    sim.integrator = integrator
+    sim.CONST_G = G
+    sim.acceleration_method = method
+    sim.output_file = output
 
-    # initialize the integrator
+    # Add to sim
+    for i in range(0,len(mass)):
+        sim.add(mass=mass[i], x=pos[3*i], y=pos[3*i+1], z=pos[3*i+2],
+                vx=vel[3*i], vy=vel[3*i+1], vz=vel[3*i+2], name=names[i])
+
+    # Run the integrator
     sim.initialize()
-
-    # perform the integration
-    sim.integrate(100)
-
+    sim.integrate(end_time)
     sim.stop()
-
-    # display the data
-    h5 = H5(output_file)
-    d = Display(h5)
-    d.display_2d_data(hash2names=hash2names, title=integrator)
-    d.display_energy_delta(G=sim.CONST_G, to_bary=(integrator=='WisdomHolman'))
-    d.show()
 
 
 if __name__ == "__main__":

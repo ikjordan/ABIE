@@ -12,6 +12,8 @@
     <Name>ABIE</Name>
     <RootNamespace>ABIE</RootNamespace>
     <InterpreterId>Global|PythonCore|3.7-32</InterpreterId>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <EnableNativeCodeDebugging>True</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
