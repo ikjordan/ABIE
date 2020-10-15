@@ -173,7 +173,7 @@ class Display:
         ax.set_xlabel(x_lab)
 
 
-    def display_2d_e_and_i(self, hash2names=None, names=None, smooth = False, title="$e$ and $I$", divisor=1.0, units=None):
+    def display_2d_e_and_i(self, hash2names=None, names=None, smooth=1, title="$e$ and $I$", divisor=1.0, units=None):
         time = self.h5.get_time()
         ecc = self.h5.get_eccentricity()
         inc = self.h5.get_inclination()
@@ -194,7 +194,7 @@ class Display:
         fig.subplots_adjust(hspace=0)
 
         fig.suptitle(title, fontsize=16)
-        if smooth > 1.0:
+        if smooth > 1:
             try:
                 from scipy.signal import butter, sosfiltfilt 
                 sos = butter(6, 1.0/smooth, output='sos')
@@ -207,14 +207,14 @@ class Display:
         for i in range(1, len(ecc[0])):
             # Plot eccentricity and incination against time 
             # Optionally smooth the graphs with a low pass filter
-            if smooth > 1.0:
+            if smooth > 1:
                 if filter:
                     ecc[:,i] = sosfiltfilt(sos, ecc[:,i])
                     inc[:,i] = sosfiltfilt(sos, inc[:,i])
                 else:
-                    pol = np.polynomial.chebyshev.chebfit(time, ecc[:,i], smooth)
+                    pol = np.polynomial.chebyshev.chebfit(time, ecc[:,i], int(smooth))
                     ecc[:,i] = np.polynomial.chebyshev.chebval(time, pol)
-                    pol = np.polynomial.chebyshev.chebfit(time, inc[:,i], smooth)
+                    pol = np.polynomial.chebyshev.chebfit(time, inc[:,i], int(smooth))
                     inc[:,i] = np.polynomial.chebyshev.chebval(time, pol)
 
             ax0.plot(time, ecc[:,i], label=names[i] if names is not None else None)

@@ -104,7 +104,7 @@ def execute_simulation(output_file, million=False):
     d.display_3d_data(names=names, title=integrator, scatter=True, to_helio=(integrator!='WisdomHolman'), equal=True)
     d.display_energy_delta(G=sim.CONST_G, divisor=divisor, units=units, to_bary=(integrator=='WisdomHolman'))
     if million:
-        d.display_2d_e_and_i(names=names, divisor=divisor, units=units, smooth=80.0)
+        d.display_2d_e_and_i(names=names, divisor=divisor, units=units, smooth=80)
     d.show()
 
 
