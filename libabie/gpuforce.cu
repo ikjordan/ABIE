@@ -83,14 +83,14 @@ extern "C" {
         }
 
         cudaError_t err;
-        gpu_init(N);
+        gpu_init((int)N);
 
 
         err = cudaMemcpy(pos_dev, pos_host, N*sizeof(double4), cudaMemcpyHostToDevice);
         if (err > 0) {printf("cudaMemcpy err = %d, host_to_dev\n", err); exit(0); }
 
         int actual_block_size = BLOCK_SIZE;
-        int nBlocks = (N + actual_block_size - 1) / actual_block_size;
+        int nBlocks = (int)((N + actual_block_size - 1) / actual_block_size);
 
         gpuforce<<<nBlocks, actual_block_size>>>(pos_dev, (double) G, (int) N, acc_dev);
         // int sharedMemSize = p * q * sizeof(float4); // 4 floats for pos
