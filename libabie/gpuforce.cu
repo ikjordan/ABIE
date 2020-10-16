@@ -64,7 +64,7 @@ extern "C" {
     }
 
     void gpu_finalize() {
-        printf("Closing CPU force...");
+        printf("Closing GPU force...");
         if (pos_dev != NULL) cudaFree(pos_dev);
         if (acc_dev != NULL) cudaFree(acc_dev);
         printf("done.\n");
@@ -73,6 +73,7 @@ extern "C" {
 
     size_t ode_n_body_second_order_gpu(const real vec[], size_t N, real G, const real masses[], const real radii[], real acc[]) {
         if (masses == NULL) {printf("masses=NULL, exiting...\n"); exit(0);}
+
         double * pos_host = (double *)malloc(N * 4 * sizeof(double));
         for (size_t i = 0; i < N; i++) {
             pos_host[4 * i] = vec[3 * i];

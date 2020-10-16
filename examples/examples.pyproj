@@ -11,7 +11,7 @@
     <OutputPath>.</OutputPath>
     <Name>examples</Name>
     <RootNamespace>examples</RootNamespace>
-    <InterpreterId>Global|PythonCore|3.7-32</InterpreterId>
+    <InterpreterId>Global|PythonCore|3.7</InterpreterId>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
     <EnableNativeCodeDebugging>True</EnableNativeCodeDebugging>
   </PropertyGroup>
@@ -23,17 +23,29 @@
     <DebugSymbols>true</DebugSymbols>
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'CUDA_Release' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+    <OutputPath>bin\CUDA_Release\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'CUDA_Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+    <OutputPath>bin\CUDA_Debug\</OutputPath>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="display.py" />
     <Compile Include="h5.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="oort.py" />
     <Compile Include="run.py" />
     <Compile Include="saturn.py" />
     <Compile Include="simple.py" />
     <Compile Include="solar.py" />
   </ItemGroup>
   <ItemGroup>
+    <InterpreterReference Include="Global|PythonCore|3.7" />
     <InterpreterReference Include="Global|PythonCore|3.7-32" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />

@@ -85,18 +85,21 @@ ABIELIBRARY_API void set_close_encounter_buffer(double *buf_ce, int max_n_ce);
 ABIELIBRARY_API void set_collision_buffer(double *buf_collision, int max_n_collision);
 ABIELIBRARY_API void get_collision_buffer(double* buf_collision);
 
+ABIELIBRARY_API void reset_close_encounter_buffer(); // should be called after the python interface finishes handling a close encounter exception
+ABIELIBRARY_API void reset_collision_buffer(); // should be called after the python interface finishes handling a collision exception
+
 // set the addtional forces calculated by external routines (e.g., in the python interface)
 ABIELIBRARY_API size_t set_additional_forces(int N, double ext_acc[]);
 
 // Utility functions
-ABIELIBRARY_API size_t ode_n_body_first_order(real *pos, size_t N, real G, const real *masses, real *dxdt);
-ABIELIBRARY_API size_t ode_n_body_second_order(const real *pos, size_t N, real G, const real *masses, const real *radii, real *acc);
-//ABIELIBRARY_API size_t ode_n_body_second_order_sapporo(const real *pos, size_t N, real G, const real *masses, const real *radii, real *acc);
-ABIELIBRARY_API size_t calculate_accelerations(const real pos[], const real vel[], size_t N, real G, const real masses[], const real radii[], real acc[]);
+size_t ode_n_body_first_order(real *pos, size_t N, real G, const real *masses, real *dxdt);
+size_t ode_n_body_second_order(const real *pos, size_t N, real G, const real *masses, const real *radii, real *acc);
+// size_t ode_n_body_second_order_sapporo(const real *pos, size_t N, real G, const real *masses, const real *radii, real *acc);
+size_t calculate_accelerations(const real pos[], const real vel[], size_t N, real G, const real masses[], const real radii[], real acc[]);
 
 // Additonal forces
-ABIELIBRARY_API size_t calculate_additional_forces(const real pos[], const real vel[], size_t N, real G, real C, const real masses[], const real radii[], real acc[]);
-ABIELIBRARY_API size_t calculate_post_newtonian(const real pos[], const real vel[], size_t N, real G, real C, const real masses[], const real radii[], real acc[]);
+size_t calculate_additional_forces(const real pos[], const real vel[], size_t N, real G, real C, const real masses[], const real radii[], real acc[]);
+size_t calculate_post_newtonian(const real pos[], const real vel[], size_t N, real G, real C, const real masses[], const real radii[], real acc[]);
 
 #ifdef GPU
 size_t ode_n_body_second_order_gpu(const real *vec, size_t N, real G, const real *masses, const real *radii, real *acc);
@@ -104,17 +107,14 @@ void gpu_init(int N);
 void gpu_finalize();
 #endif
 
-
-ABIELIBRARY_API size_t check_collisions_close_encounters(const real *vec, const real radii[], size_t N, real t);
-ABIELIBRARY_API real *vec_scalar_op(const real *vec, real scalar, size_t N, char op);
-ABIELIBRARY_API real *vec_vec_op(const real *vec1, real *vec2, size_t N, char op);
-ABIELIBRARY_API real vector_max_abs(const real *vec, size_t N);
-ABIELIBRARY_API real vector_norm(const real *vec, size_t N);
-ABIELIBRARY_API real sign(real x);
-ABIELIBRARY_API real cross_norm(const real *vec1, const real *vec2); // the magnitude of the cross product of two 3D vectors
-ABIELIBRARY_API real dot(const real *vec1, const real *vec2); // the dot product of two 3D vectors
-ABIELIBRARY_API void reset_close_encounter_buffer(); // should be called after the python interface finishes handling a close encounter exception
-ABIELIBRARY_API void reset_collision_buffer(); // should be called after the python interface finishes handling a collision exception
+size_t check_collisions_close_encounters(const real *vec, const real radii[], size_t N, real t);
+real *vec_scalar_op(const real *vec, real scalar, size_t N, char op);
+real *vec_vec_op(const real *vec1, real *vec2, size_t N, char op);
+real vector_max_abs(const real *vec, size_t N);
+real vector_norm(const real *vec, size_t N);
+real sign(real x);
+real cross_norm(const real *vec1, const real *vec2); // the magnitude of the cross product of two 3D vectors
+real dot(const real *vec1, const real *vec2); // the dot product of two 3D vectors
 
 // Integrator functions
 ABIELIBRARY_API int initialize_code(double _G, double _C, int _N_MAX, int _MAX_N_CE, int _MAX_N_COLLISIONS);

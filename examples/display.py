@@ -173,6 +173,22 @@ class Display:
         ax.set_xlabel(x_lab)
 
 
+    def display_plot(self, data, b_start, b_end, num=10, title="Delta", units=None):
+
+        self._get_figure()
+        ax = plt.subplot(111)
+        ax.set_title(title)
+
+        # plot the data
+        ax.hist(data, num, (b_start, b_end), histtype='bar')
+        ax.set_ylabel(title)
+        if units is not None:
+            x_lab = '$t$/{}'.format(units)
+        else:
+            x_lab = 'Time'
+        ax.set_xlabel(x_lab)
+
+
     def display_2d_e_and_i(self, hash2names=None, names=None, smooth=1, title="$e$ and $I$", divisor=1.0, units=None):
         time = self.h5.get_time()
         ecc = self.h5.get_eccentricity()
@@ -200,7 +216,7 @@ class Display:
                 sos = butter(6, 1.0/smooth, output='sos')
                 filter = True
             except Exception as e:
-                print("Scipy not installed - falling back to np polynomial fit")
+                print("Scipy not installed - falling back to np chebyshev fit")
                 print(e)
                 filter = False
 
