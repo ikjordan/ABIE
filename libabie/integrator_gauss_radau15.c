@@ -231,11 +231,11 @@ size_t integrator_gauss_radau15(real *pos, real *vel, real *m_vec, real *r_vec, 
     real *dy = (real *) malloc(dim * sizeof(real));
     real *db6 = (real *) malloc(dim * sizeof(real));
     real *ddy = (real *) malloc(dim * sizeof(real));
-    real bs0[nh - 1][dim];
-    real bs[nh - 1][dim];
-    real g[nh - 1][dim];
-    real E[nh - 1][dim];
-    real ddys[nh][dim];
+    real (*bs0)[dim] = (real(*)[dim])malloc(sizeof(real[nh - 1][dim]));
+    real (*bs)[dim] = (real(*)[dim])malloc(sizeof(real[nh - 1][dim]));
+    real (*g)[dim] = (real(*)[dim])malloc(sizeof(real[nh - 1][dim]));
+    real (*E)[dim] = (real(*)[dim])malloc(sizeof(real[nh - 1][dim]));
+    real (*ddys)[dim] = (real(*)[dim])malloc(sizeof(real[nh][dim]));
     real h = (real) _dt; // timestep
 
     // type casting
@@ -373,8 +373,10 @@ size_t integrator_gauss_radau15(real *pos, real *vel, real *m_vec, real *r_vec, 
         vel[i] = (double) dy[i];
     }
     for (size_t i = 0; i < N; i++) m_vec[i] = (double) masses[i];
-    free(y0); free(dy0); free(masses); free(ddy0); 
-    free(y);  free(dy);  free(db6);    free(ddy);
+    free(y0);  free(dy0); free(masses); free(ddy0); 
+    free(y);   free(dy);  free(db6);    free(ddy);
+    free(bs0); free(bs);  free(g);  free(E);
+    free(ddys);
 
     return integrator_flag;
 }
