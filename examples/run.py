@@ -2,6 +2,7 @@
 Run ABIE programmatically as a library.
 """
 import numpy as np
+import os
 try:
     from ABIE import ABIE
 except ImportError:
@@ -55,7 +56,7 @@ def execute_simulation(output_file):
     # sim.add(mass=0.0001, a=1, e=0.9500000001, name='star2', primary='star1', radius=0.0501)
     # sim.particles['star1'].primary = 'star2'
     # sim.add(mass=1.e-3, a=10, e=0, primary=['star1', 'star2'])
-    # print sim.particles
+    # print(sim.particles)
     # sys.exit(0)
     # sim.add(mass=1, x=1, y=0, z=0, vx=0, vy=2.44948974, vz=0, name='planet')
     # sim.add(mass=0.6897, x=-0.00468615, y=0.00025252, z=-0.04268986, vx=3.32104666e+00, vy=2.25621462e-03, vz=-3.78372988e-01)
@@ -80,12 +81,11 @@ def execute_simulation(output_file):
     sim.add(mass=5.02785431289e-08, a=0.00884615384615, e=0.01, i=-0.0510158147621, omega=0.0, Omega=3.14164501347, f=4.86470951828, name='moon', primary='planet', radius=1.e-5)
     # sim.add(mass=5.02785431289e-08, a=0.005, e=0.01, i=-np.pi/2, omega=0.0, Omega=3.14164501347, f=4.86470951828, name='moon', primary='planet')
     print(sim.particles)
-    # sys.exit(0)
-    # sim.add(mass=)
+
     # The output file name. If not specified, the default is 'data.hdf5'
     sim.output_file = output_file
-    sim.collision_output_file = 'abc.collisions.txt'
-    sim.close_encounter_output_file = 'abc.ce.txt'
+    sim.collision_output_file = os.path.splitext(output_file)[0] + '.collisions.txt'
+    sim.close_encounter_output_file = os.path.splitext(output_file)[0] + '.ce.txt'
 
     # Build a dictionary mapping hashes to names
     hash2names = {}
