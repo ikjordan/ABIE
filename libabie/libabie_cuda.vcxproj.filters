@@ -52,7 +52,11 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="bodysystemcuda.cu" />
-    <CudaCompile Include="gpuforce.cu" />
+    <CudaCompile Include="bodysystemcuda.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="gpuforce.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
   </ItemGroup>
 </Project>

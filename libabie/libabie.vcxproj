@@ -201,10 +201,6 @@
     <ClCompile Include="integrator_runge_kutta.c" />
     <ClCompile Include="integrator_wisdom_holman.c" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="bodysystemcuda.cu" />
-    <None Include="gpuforce.cu" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

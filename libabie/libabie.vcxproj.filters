@@ -51,8 +51,4 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
-  <ItemGroup>
-    <CudaCompile Include="bodysystemcuda.cu" />
-    <CudaCompile Include="gpuforce.cu" />
-  </ItemGroup>
 </Project>
