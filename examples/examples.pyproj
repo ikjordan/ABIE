@@ -38,6 +38,7 @@
     <Compile Include="h5.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="kuiper.py" />
     <Compile Include="oort.py" />
     <Compile Include="run.py" />
     <Compile Include="saturn.py" />

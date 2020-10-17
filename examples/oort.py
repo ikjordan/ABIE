@@ -2,6 +2,8 @@
 Run ABIE programmatically as a library.
 """
 import numpy as np
+from datetime import datetime
+import os
 try:
     from ABIE import ABIE
 except ImportError:
@@ -14,7 +16,6 @@ except ImportError:
     path.append(dirname(path[0]))
     from ABIE import ABIE
 
-from datetime import datetime
 from h5 import H5
 from display import Display
 
@@ -44,7 +45,7 @@ def execute_simulation(output_file):
     sim.acceleration_method = 'ctypes'
     # sim.acceleration_method = 'numpy'
 
-    # Add the solar system
+    # Add the outer solar system
     sim.add(mass=1.0, x=0, y=0.0, z= 0.0, vx=0.0, vy=0.0, vz=0.0, name='Sun')
     sim.add(mass=9.5458e-4, a=5.02, e=0.05, name='Jupiter')
     sim.add(mass=2.858e-4, a=9.537, e=0.05, name='Saturn')
@@ -55,24 +56,21 @@ def execute_simulation(output_file):
     n_oc = 1000
     semi = np.random.uniform(500, 10000, n_oc)
     ecc = np.random.uniform(0.3, 0.99, n_oc)
-    inc = np.random.uniform(0, 2*np.pi, n_oc)
+    inc = np.random.uniform(-np.pi, np.pi, n_oc)
 
     for i in range(n_oc):
         sim.add(0, a=semi[i], e=ecc[i], i=inc[i], name=('test_particle{}'.format(i)))
 
-    # get a list of names back
-    names = sim.particles.names
-
     # The output file name. If not specified, the default is 'data.hdf5'
     sim.output_file = output_file
-    sim.collision_output_file = 'abc.collisions.txt'
-    sim.close_encounter_output_file = 'abc.ce.txt'
+    sim.collision_output_file = os.path.splitext(output_file)[0] + '.collisions.txt'
+    sim.close_encounter_output_file = os.path.splitext(output_file)[0] + '.ce.txt'
 
     # The output frequency
-    sim.store_dt = 100          # Log data every 100 years
+    sim.store_dt = 1000         # Log data every 1000 years
 
     # The integration timestep (does not apply to Gauss-Radau15)
-    sim.h = 0.1                   # Step 10 times per year
+    sim.h = 0.1                 # Step 10 times per year
 
     sim.buffer_len = 10000
 
@@ -80,8 +78,7 @@ def execute_simulation(output_file):
     sim.initialize()
 
     # perform the integration
-    divisor = 1000            # 1000 years
-    units = "kYr"
+    divisor = 10000             # 10000 years
 
     startTime = datetime.now()
     sim.integrate(divisor)
@@ -95,9 +92,11 @@ def execute_simulation(output_file):
     semi = h5.get_semi_major()
     x, y = np.shape(semi)
 
-    # display the data
+    # display the evolved disribution
     d = Display(h5)
-    d.display_plot(np.column_stack((semi[0,5:], semi[x - 1, 5:])), 0, 15000, 60, title="Oort", units='AU')
+    d.display_histogram(semi[x - 1, 5:], 300, 10300, 100, title="Oort: Distribution", units='AU')
+    d.display_3d_data(title="Oort cloud", scatter=True, last=True)
+    d.display_2d_data(title="Oort cloud", scatter=True, equal=True, last=True)
     d.show()
 
 

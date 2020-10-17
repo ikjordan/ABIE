@@ -26,7 +26,7 @@ class Display:
             plt.show()
 
 
-    def display_3d_data(self, hash2names=None, names=None, title="Trajectory", scatter=False, to_helio=False, equal=False):
+    def display_3d_data(self, hash2names=None, names=None, title="Trajectory", scatter=False, to_helio=False, equal=False, last=False):
         # Use the hash (if provided) in favour of the supplied names
         if hash2names is not None:
             names = self.h5.hash_to_names(hash2names)
@@ -38,13 +38,17 @@ class Display:
         ax = fig.gca(projection='3d')
         ax.set_title(title)
 
-        _, width = states.shape
-        for i in range(0, width // 6): 
-            # Plot all the positions for all objects
-            if scatter:
-                ax.scatter(states[:,3*i], states[:,3*i+1], states[:,3*i+2], s=0.1, label=names[i] if names is not None else None)
-            else:
-                ax.plot(states[:,3*i], states[:,3*i+1], states[:,3*i+2], label=names[i] if names is not None else None)
+        time, width = states.shape
+        if not last:
+            for i in range(0, width // 6): 
+                # Plot all the positions for all objects
+                if scatter:
+                    ax.scatter(states[:,3*i], states[:,3*i+1], states[:,3*i+2], s=0.1, label=names[i] if names is not None else None)
+                else:
+                    ax.plot(states[:,3*i], states[:,3*i+1], states[:,3*i+2], label=names[i] if names is not None else None)
+        else:
+            # Plot only the last positions, which implies scatter. Ignore names
+            ax.scatter(states[time-1,0:width//2:3], states[time-1,1:width//2+1:3], states[time-1,2:width//2+2:3], s=0.1)
 
         if equal:
             # As equal does not work for 3d plots
@@ -64,7 +68,7 @@ class Display:
             ax.legend(markerscale=30 if scatter else 1)
 
 
-    def display_2d_data(self, hash2names=None, names=None, title="Trajectory", scatter=False, to_helio=False, equal=True, box=None):
+    def display_2d_data(self, hash2names=None, names=None, title="Trajectory", scatter=False, to_helio=False, equal=True, box=None, last=False):
         # Use the hash (if provided) in favour of the supplied names
         if hash2names is not None:
             names = self.h5.hash_to_names(hash2names)
@@ -76,13 +80,18 @@ class Display:
         ax = plt.subplot(111)
         ax.set_title(title)
 
-        _, width = states.shape
-        for i in range(0, width // 6): 
-            # Plot x and y positions for all objects
-            if scatter:
-                ax.scatter(states[:,3*i], states[:,3*i+1], s=0.1, label=names[i] if names is not None else None)
-            else:
-                ax.plot(states[:,3*i], states[:,3*i+1], label=names[i] if names is not None else None)
+        time, width = states.shape
+        if not last:
+            for i in range(0, width // 6): 
+                # Plot all the positions for all objects
+                if scatter:
+                    ax.scatter(states[:,3*i], states[:,3*i+1], s=0.1, label=names[i] if names is not None else None)
+                else:
+                    ax.plot(states[:,3*i], states[:,3*i+1], label=names[i] if names is not None else None)
+
+        else:
+            # Plot only the last positions, which implies scatter. Ignore names
+            ax.scatter(states[time-1,0:width//2:3], states[time-1,1:width//2+1:3], s=0.1)
 
         # Configure axes
         if box is not None:
@@ -140,7 +149,7 @@ class Display:
             x_lab = 'Time'
         ax.set_xlabel(x_lab)
 
-        # Request a legend and display
+        # Request a legend
         if names is not None:
             ax.legend(loc=2)
 
@@ -173,20 +182,24 @@ class Display:
         ax.set_xlabel(x_lab)
 
 
-    def display_plot(self, data, b_start, b_end, num=10, title="Delta", units=None):
+    def display_histogram(self, data, b_start, b_end, num=10, names=None, title="Distribution", units=None):
 
-        self._get_figure()
+        fig=self._get_figure()
         ax = plt.subplot(111)
         ax.set_title(title)
 
         # plot the data
-        ax.hist(data, num, (b_start, b_end), histtype='bar')
+        ax.hist(data, num, (b_start, b_end), histtype='bar', rwidth=1.0, label=names)
         ax.set_ylabel(title)
         if units is not None:
-            x_lab = '$t$/{}'.format(units)
+            x_lab = '{}'.format(units)
         else:
-            x_lab = 'Time'
+            x_lab = 'AU'
         ax.set_xlabel(x_lab)
+
+        # Request a legend
+        if names is not None:
+            legend = ax.legend()
 
 
     def display_2d_e_and_i(self, hash2names=None, names=None, smooth=1, title="$e$ and $I$", divisor=1.0, units=None):
@@ -245,8 +258,44 @@ class Display:
             x_lab = 'Time'
         ax1.set_xlabel(x_lab)
 
-        # Request a legend and display
+        # Request a legend
         if names is not None:
             legend = fig.legend()
             for line in legend.get_lines():
                 line.set_linewidth(4.0)
+
+
+    def display_2d_scatter(self, x, y0, y1=None, names=None, title="$e$ and $I$", units=None):
+        fig = self._get_figure()
+        if y1 is not None:
+            ax0 = plt.subplot(211)
+            ax1 = plt.subplot(212, sharex = ax0)
+            fig.subplots_adjust(hspace=0)
+        else:
+            ax0=plt.subplot(111)
+
+        fig.suptitle(title, fontsize=16)
+
+        _, plots = x.shape
+
+        for i in range(plots):
+            # Plot eccentricity and incination against time 
+            # Optionally smooth the graphs with a low pass filter
+            ax0.scatter(x[:,i], y0[:,i], s=0.2, label=names[i] if names is not None else None)
+
+            if y1 is not None:
+                ax1.scatter(x[:,i], y1[:,i], s=0.2)
+
+        ax0.set_ylabel('$e_i$')
+        if y1 is not None:
+            ax1.set_ylabel('$I_i$/deg')
+
+        if units is not None:
+            x_lab = '{}'.format(units)
+        else:
+            x_lab = 'Time'
+        ax0.set_xlabel(x_lab)
+
+        # Request a legend
+        if names is not None:
+            ax0.legend(markerscale=20)
