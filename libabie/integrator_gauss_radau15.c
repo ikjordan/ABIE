@@ -69,55 +69,61 @@ void approx_vel(const real dy1[], const real F1[], real h, real b[][dim], size_t
 
 void compute_gs(real ddys[][dim], int ih, size_t N, real g[][dim]) {
 
-        const real *F1 = ddys[0];
-        const real *F2 = ddys[1];
-        const real *F3 = ddys[2];
-        const real *F4 = ddys[3];
-        const real *F5 = ddys[4];
-        const real *F6 = ddys[5];
-        const real *F7 = ddys[6];
-        const real *F8 = ddys[7];
+    const real* F1 = ddys[0];
+    const real* F2 = ddys[1];
+    const real* F3 = ddys[2];
+    const real* F4 = ddys[3];
+    const real* F5 = ddys[4];
+    const real* F6 = ddys[5];
+    const real* F7 = ddys[6];
+    const real* F8 = ddys[7];
 
-        // # Update g's with accelerations
-        for (int i = 0; i < 3 * N; i++) {
-            if (ih == 1) {
-                g[0][i] = (F2[i] - F1[i]) * rs[1][0];
-            } else if (ih == 2) {
-                g[0][i] = (F2[i] - F1[i]) * rs[1][0];
-                g[1][i] = ((F3[i] - F1[i]) * rs[2][0] - g[0][i]) * rs[2][1];
-            } else if (ih == 3) {
-                g[0][i] = (F2[i] - F1[i]) * rs[1][0];
-                g[1][i] = ((F3[i] - F1[i]) * rs[2][0] - g[0][i]) * rs[2][1];
-                g[2][i] = (((F4[i] - F1[i]) * rs[3][0] - g[0][i]) * rs[3][1] - g[1][i]) * rs[3][2];
-            } else if (ih == 4) {
-                g[0][i] = (F2[i] - F1[i]) * rs[1][0];
-                g[1][i] = ((F3[i] - F1[i]) * rs[2][0] - g[0][i]) * rs[2][1];
-                g[2][i] = (((F4[i] - F1[i]) * rs[3][0] - g[0][i]) * rs[3][1] - g[1][i]) * rs[3][2];
-                g[3][i] = ((((F5[i] - F1[i]) * rs[4][0] - g[0][i]) * rs[4][1] - g[1][i]) * rs[4][2] - g[2][i]) * rs[4][3];
-            } else if (ih == 5) {
-                g[0][i] = (F2[i] - F1[i]) * rs[1][0];
-                g[1][i] = ((F3[i] - F1[i]) * rs[2][0] - g[0][i]) * rs[2][1];
-                g[2][i] = (((F4[i] - F1[i]) * rs[3][0] - g[0][i]) * rs[3][1] - g[1][i]) * rs[3][2];
-                g[3][i] = ((((F5[i] - F1[i]) * rs[4][0] - g[0][i]) * rs[4][1] - g[1][i]) * rs[4][2] - g[2][i]) * rs[4][3];
-                g[4][i] = (((((F6[i] - F1[i]) * rs[5][0] - g[0][i]) * rs[5][1] - g[1][i]) * rs[5][2] - g[2][i]) * rs[5][3] - g[3][i]) * rs[5][4];
-            } else if (ih == 6) {
-                g[0][i] = (F2[i] - F1[i]) * rs[1][0];
-                g[1][i] = ((F3[i] - F1[i]) * rs[2][0] - g[0][i]) * rs[2][1];
-                g[2][i] = (((F4[i] - F1[i]) * rs[3][0] - g[0][i]) * rs[3][1] - g[1][i]) * rs[3][2];
-                g[3][i] = ((((F5[i] - F1[i]) * rs[4][0] - g[0][i]) * rs[4][1] - g[1][i]) * rs[4][2] - g[2][i]) * rs[4][3];
-                g[4][i] = (((((F6[i] - F1[i]) * rs[5][0] - g[0][i]) * rs[5][1] - g[1][i]) * rs[5][2] - g[2][i]) * rs[5][3] - g[3][i]) * rs[5][4];
-                g[5][i] = ((((((F7[i] - F1[i]) * rs[6][0] - g[0][i]) * rs[6][1] - g[1][i]) * rs[6][2] - g[2][i]) * rs[6][3] - g[3][i]) * rs[6][4] - g[4][i]) * rs[6][5];
-            } else if (ih == 7) {
-                g[0][i] = (F2[i] - F1[i]) * rs[1][0];
-                g[1][i] = ((F3[i] - F1[i]) * rs[2][0] - g[0][i]) * rs[2][1];
-                g[2][i] = (((F4[i] - F1[i]) * rs[3][0] - g[0][i]) * rs[3][1] - g[1][i]) * rs[3][2];
-                g[3][i] = ((((F5[i] - F1[i]) * rs[4][0] - g[0][i]) * rs[4][1] - g[1][i]) * rs[4][2] - g[2][i]) * rs[4][3];
-                g[4][i] = (((((F6[i] - F1[i]) * rs[5][0] - g[0][i]) * rs[5][1] - g[1][i]) * rs[5][2] - g[2][i]) * rs[5][3] - g[3][i]) * rs[5][4];
-                g[5][i] = ((((((F7[i] - F1[i]) * rs[6][0] - g[0][i]) * rs[6][1] - g[1][i]) * rs[6][2] - g[2][i]) * rs[6][3] - g[3][i]) * rs[6][4] - g[4][i]) * rs[6][5];
-                g[6][i] = (((((((F8[i] - F1[i]) * rs[7][0] - g[0][i]) * rs[7][1] - g[1][i]) * rs[7][2] - g[2][i]) * rs[7][3] - g[3][i]) * rs[7][4] - g[4][i]) * rs[7][5] - g[5][i]) * rs[7][6];
-            }
+    // # Update g's with accelerations
+    for (int i = 0; i < 3 * N; i++) {
+        if (ih == 1) {
+            g[0][i] = (F2[i] - F1[i]) * rs[1][0];
         }
-        return;
+        else if (ih == 2) {
+            g[0][i] = (F2[i] - F1[i]) * rs[1][0];
+            g[1][i] = ((F3[i] - F1[i]) * rs[2][0] - g[0][i]) * rs[2][1];
+        }
+        else if (ih == 3) {
+            g[0][i] = (F2[i] - F1[i]) * rs[1][0];
+            g[1][i] = ((F3[i] - F1[i]) * rs[2][0] - g[0][i]) * rs[2][1];
+            g[2][i] = (((F4[i] - F1[i]) * rs[3][0] - g[0][i]) * rs[3][1] - g[1][i]) * rs[3][2];
+        }
+        else if (ih == 4) {
+            g[0][i] = (F2[i] - F1[i]) * rs[1][0];
+            g[1][i] = ((F3[i] - F1[i]) * rs[2][0] - g[0][i]) * rs[2][1];
+            g[2][i] = (((F4[i] - F1[i]) * rs[3][0] - g[0][i]) * rs[3][1] - g[1][i]) * rs[3][2];
+            g[3][i] = ((((F5[i] - F1[i]) * rs[4][0] - g[0][i]) * rs[4][1] - g[1][i]) * rs[4][2] - g[2][i]) * rs[4][3];
+        }
+        else if (ih == 5) {
+            g[0][i] = (F2[i] - F1[i]) * rs[1][0];
+            g[1][i] = ((F3[i] - F1[i]) * rs[2][0] - g[0][i]) * rs[2][1];
+            g[2][i] = (((F4[i] - F1[i]) * rs[3][0] - g[0][i]) * rs[3][1] - g[1][i]) * rs[3][2];
+            g[3][i] = ((((F5[i] - F1[i]) * rs[4][0] - g[0][i]) * rs[4][1] - g[1][i]) * rs[4][2] - g[2][i]) * rs[4][3];
+            g[4][i] = (((((F6[i] - F1[i]) * rs[5][0] - g[0][i]) * rs[5][1] - g[1][i]) * rs[5][2] - g[2][i]) * rs[5][3] - g[3][i]) * rs[5][4];
+        }
+        else if (ih == 6) {
+            g[0][i] = (F2[i] - F1[i]) * rs[1][0];
+            g[1][i] = ((F3[i] - F1[i]) * rs[2][0] - g[0][i]) * rs[2][1];
+            g[2][i] = (((F4[i] - F1[i]) * rs[3][0] - g[0][i]) * rs[3][1] - g[1][i]) * rs[3][2];
+            g[3][i] = ((((F5[i] - F1[i]) * rs[4][0] - g[0][i]) * rs[4][1] - g[1][i]) * rs[4][2] - g[2][i]) * rs[4][3];
+            g[4][i] = (((((F6[i] - F1[i]) * rs[5][0] - g[0][i]) * rs[5][1] - g[1][i]) * rs[5][2] - g[2][i]) * rs[5][3] - g[3][i]) * rs[5][4];
+            g[5][i] = ((((((F7[i] - F1[i]) * rs[6][0] - g[0][i]) * rs[6][1] - g[1][i]) * rs[6][2] - g[2][i]) * rs[6][3] - g[3][i]) * rs[6][4] - g[4][i]) * rs[6][5];
+        }
+        else if (ih == 7) {
+            g[0][i] = (F2[i] - F1[i]) * rs[1][0];
+            g[1][i] = ((F3[i] - F1[i]) * rs[2][0] - g[0][i]) * rs[2][1];
+            g[2][i] = (((F4[i] - F1[i]) * rs[3][0] - g[0][i]) * rs[3][1] - g[1][i]) * rs[3][2];
+            g[3][i] = ((((F5[i] - F1[i]) * rs[4][0] - g[0][i]) * rs[4][1] - g[1][i]) * rs[4][2] - g[2][i]) * rs[4][3];
+            g[4][i] = (((((F6[i] - F1[i]) * rs[5][0] - g[0][i]) * rs[5][1] - g[1][i]) * rs[5][2] - g[2][i]) * rs[5][3] - g[3][i]) * rs[5][4];
+            g[5][i] = ((((((F7[i] - F1[i]) * rs[6][0] - g[0][i]) * rs[6][1] - g[1][i]) * rs[6][2] - g[2][i]) * rs[6][3] - g[3][i]) * rs[6][4] - g[4][i]) * rs[6][5];
+            g[6][i] = (((((((F8[i] - F1[i]) * rs[7][0] - g[0][i]) * rs[7][1] - g[1][i]) * rs[7][2] - g[2][i]) * rs[7][3] - g[3][i]) * rs[7][4] - g[4][i]) * rs[7][5] - g[5][i]) * rs[7][6];
+        }
+    }
+    return;
 }
 
 void compute_bs_from_gs(real g[][dim], int ih, size_t N, real b[][dim]){
@@ -126,17 +132,26 @@ void compute_bs_from_gs(real g[][dim], int ih, size_t N, real b[][dim]){
             b[0][i] = cs[0][0]*g[0][i] + cs[1][0]*g[1][i] + cs[2][0]*g[2][i] + cs[3][0]*g[3][i] + cs[4][0]*g[4][i] + cs[5][0]*g[5][i] + cs[6][0]*g[6][i];
         }
     } else if (ih == 2) {
+#if OPENMP
+#pragma omp simd
+#endif
         for (int i = 0; i < 3 * N; i++) {
             b[0][i] = cs[0][0]*g[0][i] + cs[1][0]*g[1][i] + cs[2][0]*g[2][i] + cs[3][0]*g[3][i] + cs[4][0]*g[4][i] + cs[5][0]*g[5][i] + cs[6][0]*g[6][i];
             b[1][i] =                  + cs[1][1]*g[1][i] + cs[2][1]*g[2][i] + cs[3][1]*g[3][i] + cs[4][1]*g[4][i] + cs[5][1]*g[5][i] + cs[6][1]*g[6][i];
         }
     } else if (ih == 3) {
+#if OPENMP
+#pragma omp simd
+#endif
         for (int i = 0; i < 3 * N; i++) {
             b[0][i] = cs[0][0]*g[0][i] + cs[1][0]*g[1][i] + cs[2][0]*g[2][i] + cs[3][0]*g[3][i] + cs[4][0]*g[4][i] + cs[5][0]*g[5][i] + cs[6][0]*g[6][i];
             b[1][i] =                  + cs[1][1]*g[1][i] + cs[2][1]*g[2][i] + cs[3][1]*g[3][i] + cs[4][1]*g[4][i] + cs[5][1]*g[5][i] + cs[6][1]*g[6][i];
             b[2][i] =                                     + cs[2][2]*g[2][i] + cs[3][2]*g[3][i] + cs[4][2]*g[4][i] + cs[5][2]*g[5][i] + cs[6][2]*g[6][i];
         }
     } else if (ih == 4) {
+#if OPENMP
+#pragma omp simd
+#endif
         for (int i = 0; i < 3 * N; i++) {
             b[0][i] = cs[0][0]*g[0][i] + cs[1][0]*g[1][i] + cs[2][0]*g[2][i] + cs[3][0]*g[3][i] + cs[4][0]*g[4][i] + cs[5][0]*g[5][i] + cs[6][0]*g[6][i];
             b[1][i] =                  + cs[1][1]*g[1][i] + cs[2][1]*g[2][i] + cs[3][1]*g[3][i] + cs[4][1]*g[4][i] + cs[5][1]*g[5][i] + cs[6][1]*g[6][i];
@@ -144,6 +159,9 @@ void compute_bs_from_gs(real g[][dim], int ih, size_t N, real b[][dim]){
             b[3][i] =                                                          cs[3][3]*g[3][i] + cs[4][3]*g[4][i] + cs[5][3]*g[5][i] + cs[6][3]*g[6][i];
         }
     } else if (ih == 5) {
+#if OPENMP
+#pragma omp simd
+#endif
         for (int i = 0; i < 3 * N; i++) {
             b[0][i] = cs[0][0]*g[0][i] + cs[1][0]*g[1][i] + cs[2][0]*g[2][i] + cs[3][0]*g[3][i] + cs[4][0]*g[4][i] + cs[5][0]*g[5][i] + cs[6][0]*g[6][i];
             b[1][i] =                  + cs[1][1]*g[1][i] + cs[2][1]*g[2][i] + cs[3][1]*g[3][i] + cs[4][1]*g[4][i] + cs[5][1]*g[5][i] + cs[6][1]*g[6][i];
@@ -152,6 +170,9 @@ void compute_bs_from_gs(real g[][dim], int ih, size_t N, real b[][dim]){
             b[4][i] =                                                                             cs[4][4]*g[4][i] + cs[5][4]*g[5][i] + cs[6][4]*g[6][i];
         }
     } else if (ih == 6) {
+#if OPENMP
+#pragma omp simd
+#endif
         for (int i = 0; i < 3 * N; i++) {
             b[0][i] = cs[0][0]*g[0][i] + cs[1][0]*g[1][i] + cs[2][0]*g[2][i] + cs[3][0]*g[3][i] + cs[4][0]*g[4][i] + cs[5][0]*g[5][i] + cs[6][0]*g[6][i];
             b[1][i] =                  + cs[1][1]*g[1][i] + cs[2][1]*g[2][i] + cs[3][1]*g[3][i] + cs[4][1]*g[4][i] + cs[5][1]*g[5][i] + cs[6][1]*g[6][i];
@@ -161,6 +182,9 @@ void compute_bs_from_gs(real g[][dim], int ih, size_t N, real b[][dim]){
             b[5][i] =                                                                                                cs[5][5]*g[5][i] + cs[6][5]*g[6][i];
         }
     } else if (ih == 7) {
+#if OPENMP
+#pragma omp simd
+#endif
         for (int i = 0; i < 3 * N; i++) {
             b[0][i] = cs[0][0]*g[0][i] + cs[1][0]*g[1][i] + cs[2][0]*g[2][i] + cs[3][0]*g[3][i] + cs[4][0]*g[4][i] + cs[5][0]*g[5][i] + cs[6][0]*g[6][i];
             b[1][i] =                  + cs[1][1]*g[1][i] + cs[2][1]*g[2][i] + cs[3][1]*g[3][i] + cs[4][1]*g[4][i] + cs[5][1]*g[5][i] + cs[6][1]*g[6][i];
@@ -357,9 +381,9 @@ size_t integrator_gauss_radau15(real *pos, real *vel, real *m_vec, real *r_vec, 
         if (h < h_min){
             if (warning_msg_printed == 0){
 #ifdef LONGDOUBLE
-                printf("Warning! Timestep %Lg being too small! Imposing a minimum timestep of %Lg, t = %Lg\n", h, h_min, t);
+                printf("Warning! Timestep %Lg is too small! Imposing a minimum timestep of %Lg, t = %Lg\n", h, h_min, t);
 #else
-                printf("Warning! Timestep %g being too small! Imposing a minimum timestep of %g, t = %g\n", h, h_min, t);
+                printf("Warning! Timestep %g is too small! Imposing a minimum timestep of %g, t = %g\n", h, h_min, t);
 #endif
                 warning_msg_printed = 1; // suppress further warning
             }

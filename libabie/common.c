@@ -76,6 +76,45 @@ size_t ode_n_body_second_order(const real vec[], size_t N, real G, const real ma
     return EXIT_NORMAL;
 }
 
+inline size_t ode_n_body_second_order_omp(const real vec[], size_t N, real G, const real masses[], const real radii[], real acc[]) {
+    real dx, dy, dz;
+    real GM;
+
+    // Calculate the combined accelerations onto particle j
+    // i.e. j is the sink, k is the source
+#if OPENMP
+#pragma omp parallel for private(dx, dy, dz, GM)
+#endif
+    for (int j = 0; j < N; j++) {
+        if (masses[j] < 0.0) {
+            // if the mass is negative, the particle is deleted
+            continue;
+        }
+        real ax = 0.0;
+        real ay = 0.0;
+        real az = 0.0;
+
+        for (int k = 0; k < N; k++)
+        {
+            if (j == k || masses[k] <= 0.0) continue;
+            GM = G * masses[k];
+            dx = vec[j * 3] - vec[k * 3];
+            dy = vec[j * 3 + 1] - vec[k * 3 + 1];
+            dz = vec[j * 3 + 2] - vec[k * 3 + 2];
+            real rel_sep2 = dx * dx + dy * dy + dz * dz;
+            real rel_sep = sqrt(rel_sep2);
+            real rel_sep3 = rel_sep * rel_sep2;
+            ax -= (GM * dx / rel_sep3);
+            ay -= (GM * dy / rel_sep3);
+            az -= (GM * dz / rel_sep3);
+        }
+        acc[j * 3] = ax;
+        acc[j * 3 + 1] = ay;
+        acc[j * 3 + 2] = az;
+    }
+    return EXIT_NORMAL;
+}
+
 
 size_t calculate_accelerations(const real pos[], const real vel[], size_t N, real G, const real masses[], const real radii[], real acc[]) {
     // calculate the accelerations due to N bodies
@@ -89,6 +128,13 @@ size_t calculate_accelerations(const real pos[], const real vel[], size_t N, rea
     }
 #elif SAPPORO
     ode_n_body_second_order_sapporo(pos, N, G, masses, radii, acc);
+#elif OPENMP
+    if(N>256)
+    {
+        ode_n_body_second_order_omp(pos, N, G, masses, radii, acc);
+    } else {
+        ode_n_body_second_order(pos, N, G, masses, radii, acc);
+    }
 #else
     ode_n_body_second_order(pos, N, G, masses, radii, acc);
 #endif
@@ -114,15 +160,18 @@ size_t calculate_accelerations(const real pos[], const real vel[], size_t N, rea
     return EXIT_NORMAL;
 }
 
-size_t check_collisions_close_encounters(const real *vec, const real radii[], size_t N, real t) {
+inline size_t check_collisions_close_encounters_omp(const real* vec, const real radii[], size_t N, real t) {
     real x, y, z;
     real dx, dy, dz;
+
+#if OPENMP
+#pragma omp parallel for private(dx, dy, dz, x, y, z)
+#endif
     for (int j = 0; j < N; j++){
         x = vec[j * 3];
         y = vec[j * 3 + 1];
         z = vec[j * 3 + 2];
-        for (int k = 0; k < N; k++) {
-            if (j == k) continue;
+        for (int k = j + 1; k < N; k++) {
             dx = x - vec[k * 3];
             dy = y - vec[k * 3 + 1];
             dz = z - vec[k * 3 + 2];
@@ -131,7 +180,7 @@ size_t check_collisions_close_encounters(const real *vec, const real radii[], si
             real r = radii[j] + radii[k];
 
             // close encounter detection
-            if (rel_sep <= close_encounter_distance && (j < k)){
+            if (rel_sep <= close_encounter_distance){
                 if (buf_ce_events != NULL) {
                     buf_ce_events[(4 * n_close_encounters) % (4 * MAX_N_CE)] = t;
                     buf_ce_events[(4 * n_close_encounters + 1) % (4 * MAX_N_CE)] = j;
@@ -142,7 +191,7 @@ size_t check_collisions_close_encounters(const real *vec, const real radii[], si
             }
 
             // collision detection
-            if ((r > 0) && (rel_sep <= r) && (j < k)) {
+            if ((r > 0) && (rel_sep <= r)) {
                 if (buf_collision_events != NULL) {
                     buf_collision_events[(4 * n_collisions) % (4 * MAX_N_COLLISIONS)] = t;
                     buf_collision_events[(4 * n_collisions + 1) % (4 * MAX_N_COLLISIONS)] = j;
@@ -156,6 +205,59 @@ size_t check_collisions_close_encounters(const real *vec, const real radii[], si
     if ((MAX_N_CE) > 0 && (n_close_encounters >= MAX_N_CE)) return EXIT_MAX_N_CE_EXCEEDED;
     else if ((MAX_N_COLLISIONS > 0) && (n_collisions >= MAX_N_COLLISIONS)) return EXIT_MAX_N_COLLISIONS_EXCEEDED;
     else return EXIT_NORMAL;
+}
+
+inline size_t check_collisions_close_encounters_serial(const real* vec, const real radii[], size_t N, real t) {
+    real x, y, z;
+    real dx, dy, dz;
+
+    for (int j = 0; j < N; j++) {
+        x = vec[j * 3];
+        y = vec[j * 3 + 1];
+        z = vec[j * 3 + 2];
+        for (int k = j + 1; k < N; k++) {
+            dx = x - vec[k * 3];
+            dy = y - vec[k * 3 + 1];
+            dz = z - vec[k * 3 + 2];
+            real rel_sep2 = dx * dx + dy * dy + dz * dz;
+            real rel_sep = sqrt(rel_sep2);
+            real r = radii[j] + radii[k];
+
+            // close encounter detection
+            if (rel_sep <= close_encounter_distance) {
+                if (buf_ce_events != NULL) {
+                    buf_ce_events[(4 * n_close_encounters) % (4 * MAX_N_CE)] = t;
+                    buf_ce_events[(4 * n_close_encounters + 1) % (4 * MAX_N_CE)] = j;
+                    buf_ce_events[(4 * n_close_encounters + 2) % (4 * MAX_N_CE)] = k;
+                    buf_ce_events[(4 * n_close_encounters + 3) % (4 * MAX_N_CE)] = rel_sep;
+                }
+                n_close_encounters += 1;
+            }
+
+            // collision detection
+            if ((r > 0) && (rel_sep <= r)) {
+                if (buf_collision_events != NULL) {
+                    buf_collision_events[(4 * n_collisions) % (4 * MAX_N_COLLISIONS)] = t;
+                    buf_collision_events[(4 * n_collisions + 1) % (4 * MAX_N_COLLISIONS)] = j;
+                    buf_collision_events[(4 * n_collisions + 2) % (4 * MAX_N_COLLISIONS)] = k;
+                    buf_collision_events[(4 * n_collisions + 3) % (4 * MAX_N_COLLISIONS)] = rel_sep;
+                }
+                n_collisions += 1;
+            }
+        }
+    }
+    if ((MAX_N_CE) > 0 && (n_close_encounters >= MAX_N_CE)) return EXIT_MAX_N_CE_EXCEEDED;
+    else if ((MAX_N_COLLISIONS > 0) && (n_collisions >= MAX_N_COLLISIONS)) return EXIT_MAX_N_COLLISIONS_EXCEEDED;
+    else return EXIT_NORMAL;
+}
+
+size_t check_collisions_close_encounters(const real* vec, const real radii[], size_t N, real t) {
+#if OPENMP
+    if (N > 256)
+        return check_collisions_close_encounters_omp(vec, radii, N, t);
+    else
+#endif
+        return check_collisions_close_encounters_serial(vec, radii, N, t);
 }
 
 real *vec_scalar_op(const real *vec, real scalar, size_t N, char op) {
@@ -265,10 +367,6 @@ int initialize_code(double _G, double _C, int _N_MAX, int _MAX_N_CE, int _MAX_N_
     // buf_collision_events = NULL;
     for (size_t i = 0; i < 4 * MAX_N_CE; i++) buf_ce_events[i] = 0.0;
     for (size_t i = 0; i < 4 * MAX_N_COLLISIONS; i++) buf_collision_events[i] = 0.0;
-
-#ifdef GPU
-    gpu_init(_N_MAX);
-#endif
 
 #ifdef SAPPORO
     initialize_sapporo();
