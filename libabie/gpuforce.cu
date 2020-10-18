@@ -10,81 +10,96 @@ extern "C" {
 
 }
 
-#define BLOCK_SIZE 256
-#define SOFTENING 0.0f
-double4 *pos_dev;
-double3 *acc_dev;
+#define BLOCK_SIZE 128
+double4 *pos_dev = NULL;
+double3 *acc_dev = NULL;
+double* pos_host = NULL;
 int inited = 0;
+int N_store = 0;
 
 void calculate_force_cuda(double4* oldPos, double G, int numBodies, double4* acc);
+
 __global__ void cudaforce(double4* oldPos, double G, int numBodies, double3* acc);
+
 void integrateNbodySystem(double4 *dPos, double3 *acc,
                            double G,
                            unsigned int numBodies,
                            int blockSize);
 
-__global__ void gpuforce(double4 *p, double G, int n, double3 *acc) {
+__global__ void gpuforce(double4* p, double G, int n, double3* acc) {
     int i = blockDim.x * blockIdx.x + threadIdx.x;
     if (i < n) {
-        double Fx = 0.0f; double Fy = 0.0f; double Fz = 0.0f;
+        double Fx = 0.0f; 
+        double Fy = 0.0f; 
+        double Fz = 0.0f;
 
-// #pragma unroll
-            for (int j = 0; j < n; j++) {
-                double m = p[j].w;
-                if (i == j || m == 0) continue;
-                double dx = p[i].x - p[j].x;
-                double dy = p[i].y - p[j].y;
-                double dz = p[i].z - p[j].z;
-                double distSqr = dx*dx + dy*dy + dz*dz + SOFTENING;
-                if (distSqr == SOFTENING) continue;
-                double invDist = rsqrt(distSqr);
-                double invDist3 = invDist * invDist * invDist;
+ //#pragma unroll
+        for (int j = 0; j < n; j++) {
+            double m = p[j].w;
+            if (i == j || m == 0) continue;
+            double dx = p[i].x - p[j].x;
+            double dy = p[i].y - p[j].y;
+            double dz = p[i].z - p[j].z;
+            double distSqr = dx * dx + dy * dy + dz * dz;
+            double invDist = rsqrt(distSqr);
+            double invDist3 = invDist * invDist * invDist;
 
-                Fx -= (G * m * dx * invDist3);
-                Fy -= (G * m * dy * invDist3);
-                Fz -= (G * m * dz * invDist3);
-            }
-            acc[i].x = Fx; acc[i].y = Fy; acc[i].z = Fz;
+            Fx -= (G * m * dx * invDist3);
+            Fy -= (G * m * dy * invDist3);
+            Fz -= (G * m * dz * invDist3);
         }
+        acc[i].x = Fx;
+        acc[i].y = Fy;
+        acc[i].z = Fz;
+    }
 }
-
 
 extern "C" {
 
     void gpu_init(int N) {
-        if (inited) return;
+        if (inited && N==N_store) return;
+        // Clean up anything used previously
+        printf("  gpu_init N=%d  ", N);
+        gpu_finalize();
+
+        // Create a new data set
         int bytes = N * sizeof(double4);
         int err = 0;
         err = cudaMalloc(&pos_dev, bytes);
         if (err > 0) {printf("cudaMalloc err = %d\n", err); exit(0); }
         err = cudaMalloc(&acc_dev, N * sizeof(double3));
         if (err > 0) {printf("cudaMalloc err = %d\n", err); exit(0); }
+        pos_host = (double*)malloc(N * 4 * sizeof(double));
         inited = 1;
-        printf("GPU force opened.\n");
+        N_store = N;
+        printf("...GPU force opened.\n");
     }
 
     void gpu_finalize() {
-        printf("Closing GPU force...");
+        if (pos_host)
+            printf("Closing GPU force...\n");
         if (pos_dev != NULL) cudaFree(pos_dev);
         if (acc_dev != NULL) cudaFree(acc_dev);
-        printf("done.\n");
+        free(pos_host);
+        pos_dev = NULL;
+        acc_dev = NULL;
+        pos_host = NULL;
+        inited = 0;
+        N_store = 0;
     }
-
 
     size_t ode_n_body_second_order_gpu(const real vec[], size_t N, real G, const real masses[], const real radii[], real acc[]) {
         if (masses == NULL) {printf("masses=NULL, exiting...\n"); exit(0);}
 
-        double * pos_host = (double *)malloc(N * 4 * sizeof(double));
+        cudaError_t err;
+        gpu_init((int)N);
+
         for (size_t i = 0; i < N; i++) {
             pos_host[4 * i] = vec[3 * i];
             pos_host[4 * i + 1] = vec[3 * i + 1];
             pos_host[4 * i + 2] = vec[3 * i + 2];
             pos_host[4 * i + 3] = masses[i];
         }
-
-        cudaError_t err;
-        gpu_init((int)N);
-
 
         err = cudaMemcpy(pos_dev, pos_host, N*sizeof(double4), cudaMemcpyHostToDevice);
         if (err > 0) {printf("cudaMemcpy err = %d, host_to_dev\n", err); exit(0); }
@@ -116,7 +131,6 @@ extern "C" {
         // for (int i = 0; i < 3 * N; i++) printf("%f\t", acc[i]);
         // exit(0);
         // for (int i = 0; i < 3 * N; i++) acc[i] = (real) acc_host[i];
-        free(pos_host);
 
         return 0;
     }
