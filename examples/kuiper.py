@@ -50,30 +50,30 @@ def execute_simulation(output_file):
     sim.add(mass=5.15e-5, a=30.07, e=0.0086, name='Neptune')
 
     # Add the kuiper belt particles - initially uniformally distributed
-    n_oc = 1600
-    start_semi = np.linspace(33.51, 53.51, n_oc, endpoint=False)
+    n_oc = 4000
+    start_semi = np.linspace(33.501, 53.501, n_oc, endpoint=False)
 
     # Circular orbits with no inclination
     for i in range(n_oc):
-        sim.add(0, a=start_semi[i], e=0, i=0, name=('test_particle{}'.format(i)))
+        sim.add(1e-15, a=start_semi[i], e=0, i=0, name=('test_particle{}'.format(i)))
 
     sim.output_file = output_file
     sim.collision_output_file = os.path.splitext(output_file)[0] + '.collisions.txt'
     sim.close_encounter_output_file = os.path.splitext(output_file)[0] + '.ce.txt'
 
     # The output frequency
-    sim.store_dt = 10000            # Log data every 10000 years
+    sim.store_dt = 100              # Log data every 100 years
 
     # The integration timestep (does not apply to Gauss-Radau15)
     sim.h = 1                       # 1 Step per year
 
-    sim.buffer_len = 10000
+    sim.buffer_len = 1000
 
     # initialize the integrator
     sim.initialize()
 
     # perform the integration
-    divisor = 50000
+    divisor = 1000
 
     startTime = datetime.now()
     sim.integrate(divisor)

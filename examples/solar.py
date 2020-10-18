@@ -2,6 +2,7 @@
 Run ABIE programmatically as a library.
 """
 import numpy as np
+from datetime import datetime
 try:
     from ABIE import ABIE
 except ImportError:
@@ -40,7 +41,6 @@ def execute_simulation(output_file, million=False):
     # integrator = 'GaussRadau15'
     sim.integrator = integrator
 
-
     # Use the CONST_G parameter to set units
     sim.CONST_G = 1.48813611629e-34
 
@@ -65,8 +65,6 @@ def execute_simulation(output_file, million=False):
 
     # The output file name. If not specified, the default is 'data.hdf5'
     sim.output_file = output_file
-    sim.collision_output_file = 'abc.collisions.txt'
-    sim.close_encounter_output_file = 'abc.ce.txt'
 
     # The output frequency
     if million:
@@ -93,8 +91,11 @@ def execute_simulation(output_file, million=False):
         divisor = 365.25 * 1000            # Thousand years
         units = "kYr"
 
+    startTime = datetime.now()
     sim.integrate(divisor)
     sim.stop()
+    endTime = datetime.now()
+    print("Time taken = {} seconds.".format(endTime - startTime))
 
     # display the data
     h5 = H5(output_file)
