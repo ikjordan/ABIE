@@ -58,12 +58,14 @@ def execute_simulation(output_file, million=False):
     sim.add(mass=5.684766319852324e26, x= 6.399272018423088e+00, y= 6.567193895707603e+00, z=-3.688702929216678e-01, vx=-4.286973417088009e-03, vy= 3.882908784079374e-03, vz= 1.028535168332451e-04, name='Saturn')
     sim.add(mass=8.682168328818365e25, x= 1.442472018423088e+01, y=-1.373711773058018e+01, z=-2.379347191117984e-01, vx= 2.683483979188155e-03, vy= 2.665288849251202e-03, vz=-2.486624055378518e-05, name='Uranus')
     sim.add(mass=1.024339999008106e26, x= 1.680490957344363e+01, y=-2.499455859992035e+01, z= 1.274294623716956e-01, vx= 2.584652466233836e-03, vy= 1.769493937752207e-03, vz=-9.600383320403503e-05, name='Neptune')
-    print(sim.particles)
+
+    # Set the momentum in the system to 0
+    sim.particles.balance_system()
 
     # get a list of names back
     names = sim.particles.names
 
-    # The output file name. If not specified, the default is 'data.hdf5'
+    # The output file name. 
     sim.output_file = output_file
 
     # The output frequency
@@ -103,7 +105,7 @@ def execute_simulation(output_file, million=False):
     d.set_data(h5)
     d.display_2d_data(names=names, title=integrator, scatter=True, to_helio=(integrator!='WisdomHolman'))
     d.display_3d_data(names=names, title=integrator, scatter=True, to_helio=(integrator!='WisdomHolman'), equal=True)
-    d.display_energy_delta(G=sim.CONST_G, divisor=divisor, units=units, to_bary=(integrator=='WisdomHolman'))
+    d.display_energy_delta(G=sim.CONST_G, divisor=divisor, units=units, to_bary=(integrator=='WisdomHolman'), sim=sim)
     if million:
         d.display_2d_e_and_i(names=names, divisor=divisor, units=units, smooth=80)
     d.show()

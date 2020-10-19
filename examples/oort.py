@@ -39,7 +39,8 @@ def execute_simulation(output_file):
 
 
     # Use the CONST_G parameter to set units
-    sim.CONST_G = 4 * np.pi ** 2
+    G = 4 * np.pi ** 2
+    sim.CONST_G = G
 
     # The underlying implementation of the integrator ('ctypes' or 'numpy')
     sim.acceleration_method = 'ctypes'
@@ -59,7 +60,7 @@ def execute_simulation(output_file):
     inc = np.random.uniform(-np.pi, np.pi, n_oc)
 
     for i in range(n_oc):
-        sim.add(0, a=semi[i], e=ecc[i], i=inc[i], name=('test_particle{}'.format(i)))
+        sim.add(0, a=semi[i], e=ecc[i], i=inc[i], primary='Sun', name=('test_particle{}'.format(i)))
 
     # The output file name. If not specified, the default is 'data.hdf5'
     sim.output_file = output_file
@@ -97,6 +98,8 @@ def execute_simulation(output_file):
     d.display_histogram(semi[x - 1, 5:], 300, 10300, 100, title="Oort: Distribution", units='AU')
     d.display_3d_data(title="Oort cloud", scatter=True, last=True)
     d.display_2d_data(title="Oort cloud", scatter=True, equal=True, last=True)
+    d.display_energy_delta(G=G, sim=sim, units="Yr")
+
     d.show()
 
 

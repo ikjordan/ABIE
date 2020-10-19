@@ -156,7 +156,7 @@ class Display:
         fig.tight_layout()
 
 
-    def display_energy_delta(self, title="Energy Delta", G=1.0, divisor=1.0, units=None, to_bary=False):
+    def display_energy_delta(self, title="Energy Delta", G=1.0, divisor=1.0, units=None, to_bary=False, sim=None):
         # Get time
         time = self.h5.get_time()
         
@@ -164,7 +164,7 @@ class Display:
         time = time / divisor
 
         # Get energy against time
-        energy = self.h5.compute_energy(G, to_bary)
+        energy = self.h5.compute_energy(G, to_bary, sim)
 
         # Plot energy delta
         self._get_figure()
@@ -265,7 +265,7 @@ class Display:
                 line.set_linewidth(4.0)
 
 
-    def display_2d_scatter(self, x, y0, y1=None, names=None, title="$e$ and $I$", units=None):
+    def display_2d_scatter(self, x, y0, y1=None, names=None, title="$e$ and $I$", equal=False, x_units=None, y_units=None):
         fig = self._get_figure()
         if y1 is not None:
             ax0 = plt.subplot(211)
@@ -279,22 +279,29 @@ class Display:
         _, plots = x.shape
 
         for i in range(plots):
-            # Plot eccentricity and incination against time 
-            # Optionally smooth the graphs with a low pass filter
+            # Plot sets of data
             ax0.scatter(x[:,i], y0[:,i], s=0.2, label=names[i] if names is not None else None)
 
             if y1 is not None:
                 ax1.scatter(x[:,i], y1[:,i], s=0.2)
+        
+        if y_units is not None:
+            y_lab = '{}'.format(y_units)
+        else:
+            y_lab = '$e_i$'
+        ax0.set_ylabel(y_lab)
 
-        ax0.set_ylabel('$e_i$')
         if y1 is not None:
             ax1.set_ylabel('$I_i$/deg')
 
-        if units is not None:
-            x_lab = '{}'.format(units)
+        if x_units is not None:
+            x_lab = '{}'.format(x_units)
         else:
             x_lab = 'Time'
         ax0.set_xlabel(x_lab)
+
+        if equal:
+            ax0.axis('equal')
 
         # Request a legend
         if names is not None:

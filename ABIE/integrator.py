@@ -123,6 +123,10 @@ class Integrator(object):
         else:
             return self._particles.energy
 
+    def calculate_energy_supplied(self, pos, vel, masses, G):
+        # return energy of supplied data
+        return self.libabie.get_total_energy_supplied(pos, vel, masses, G)
+
     def set_additional_forces(self, ext_acc):
         self.libabie.set_additional_forces(ext_acc)
 

@@ -459,6 +459,26 @@ double calculate_energy() {
     return (double)energy;
 }
 
+double calculate_energy_supplied(double* pos_vec, double* vel_vec, double* m_vec, int N, double G) {
+    double energy = 0.0;
+    double d_pos[3];
+
+    for (size_t i = 0; i < N; i++) {
+        if (m_vec[i] == 0) continue;
+        // kinetic energy
+        energy += (0.5 * m_vec[i] * pow(vector_norm(&(vel_vec[3 * i]), 3), 2.0));
+        // potential energy
+        for (size_t j = 0; j < N; j++) {
+            if ((i == j) || (m_vec[j] == 0)) continue;
+            d_pos[0] = pos_vec[3 * i] - pos_vec[3 * j];
+            d_pos[1] = pos_vec[3 * i + 1] - pos_vec[3 * j + 1];
+            d_pos[2] = pos_vec[3 * i + 2] - pos_vec[3 * j + 2];
+            energy -= (0.5 * G * m_vec[i] * m_vec[j] / vector_norm(d_pos, 3));
+        }
+    }
+    return energy;
+}
+
 /***
  * Plug the additional forces calculated elsewhere into the integrator.
  * WARNING: if the ext_acc[] array is not updated every integration timestep by

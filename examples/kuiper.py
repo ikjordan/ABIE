@@ -39,7 +39,8 @@ def execute_simulation(output_file):
 
 
     # Use the CONST_G parameter to set units
-    sim.CONST_G = 4 * np.pi ** 2
+    G = 4 * np.pi ** 2
+    sim.CONST_G = G
 
     # The underlying implementation of the integrator ('ctypes' or 'numpy')
     sim.acceleration_method = 'ctypes'
@@ -55,7 +56,14 @@ def execute_simulation(output_file):
 
     # Circular orbits with no inclination
     for i in range(n_oc):
-        sim.add(1e-15, a=start_semi[i], e=0, i=0, name=('test_particle{}'.format(i)))
+        sim.add(1e-15, a=start_semi[i], e=0, i=0, primary='Sun', name=('test_particle{}'.format(i)))
+
+    # Set the momentum in the system to 0
+    sim.particles.balance_system()
+
+    # Verify by displaying the centre of mass
+    com = sim.particles.get_center_of_mass()
+    print('System Mass: {} vx: {} vy: {} vz: {}'.format(com.mass, com.vx, com.vy, com.vy))
 
     sim.output_file = output_file
     sim.collision_output_file = os.path.splitext(output_file)[0] + '.collisions.txt'
@@ -65,7 +73,7 @@ def execute_simulation(output_file):
     sim.store_dt = 100              # Log data every 100 years
 
     # The integration timestep (does not apply to Gauss-Radau15)
-    sim.h = 1                       # 1 Step per year
+    sim.h = 10                       
 
     sim.buffer_len = 1000
 
@@ -83,10 +91,8 @@ def execute_simulation(output_file):
 
     h5 = H5(output_file)
 
-    # Get the semi-major axis
+    # Get the data
     semi = h5.get_semi_major()
-    x, y = np.shape(semi)
-
     ecc = h5.get_eccentricity()
 
     # display the data
@@ -98,11 +104,31 @@ def execute_simulation(output_file):
 
     # Display distribution at mid and full simulation time
     names = ['Mid', 'Full']
-    d.display_histogram(np.column_stack((semi[(x-1)//2, 2:], semi[x - 1, 2:])), 31, 56, 500, names=names, title="Kuiper Mid and Full Distribution", units='AU')
-    d.display_2d_scatter(np.column_stack((semi[(x-1)//2, 2:], semi[x - 1, 2:])),
-                         np.column_stack((ecc[(x-1)//2, 2:], ecc[x - 1, 2:])), 
-                         names=names, title="$e$ for Distribution", units='AU')
+    x, y = np.shape(semi)
 
+    d.display_histogram(np.column_stack((semi[(x-1)//2, 2:], semi[-1, 2:])), 31, 56, 500, names=names, title="Kuiper Mid and Full Distribution", units='AU')
+    d.display_2d_scatter(np.column_stack((semi[(x-1)//2, 2:], semi[-1, 2:])),
+                         np.column_stack((ecc[(x-1)//2, 2:], ecc[-1, 2:])), 
+                         names=names, title="$e$ for Distribution", y_units='AU')
+    d.display_energy_delta(G=G, sim=sim, to_bary=(integrator=='WisdomHolman'), units="Yr")
+
+    # Display the sun, neptune + n particles with highest eccentricity
+    n = 5
+
+    # Get the indexes of the bodies with the largest eccentricities, excluding the sun and neptune
+    ind = np.argpartition(ecc[-1, 2:], -n)[-n:] +2
+    
+    # Add on sun and neptune
+    ind = np.concatenate(([0, 1], ind)) * 3
+    x0 = np.empty((x, 2 + n))
+    y0 = np.empty((x, 2 + n))
+
+    # Extract the x and y positions
+    state = h5.get_state()
+    x0 = state[:, ind]
+    y0 = state[:, (ind + 1)]
+
+    d.display_2d_scatter(x0, y0, title="High Excentricities", equal=True, x_units="AU", y_units="AU")
     d.show()
 
 

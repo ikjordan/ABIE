@@ -128,5 +128,6 @@ ABIELIBRARY_API void integrator_wisdom_holman(real *pos, real *vel, real *m_vec,
 ABIELIBRARY_API int integrator_wh(double t, double t_end, double dt);
 
 ABIELIBRARY_API double calculate_energy();
+ABIELIBRARY_API double calculate_energy_supplied(double* pos_vec, double* vel_vec, double* m_vec, int N, double G);
 
 #endif

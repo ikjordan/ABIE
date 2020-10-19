@@ -116,6 +116,15 @@ class CLibABIE(object):
         self.lib.calculate_energy.restype = ctypes.c_double
         return self.lib.calculate_energy()
 
+    def get_total_energy_supplied(self, pos, vel, masses, G):
+        n = masses.shape
+        self.lib.calculate_energy_supplied.restype = ctypes.c_double
+        return self.lib.calculate_energy_supplied(ctypes.c_void_p(pos.ctypes.data),
+                                                  ctypes.c_void_p(vel.ctypes.data),
+                                                  ctypes.c_void_p(masses.ctypes.data),
+                                                  ctypes.c_int(masses.shape[0]),
+                                                  ctypes.c_double(G))
+
     def set_additional_forces(self, ext_acc):
         """
         :param ext_acc: A 3 * N vector

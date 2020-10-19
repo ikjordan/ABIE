@@ -65,7 +65,7 @@ class H5:
         return Tools.move_to_bary(self.get_state(), self.get_mass())
 
 
-    def compute_energy(self, G, to_bary=False):
+    def compute_energy(self, G, to_bary=False, sim=None):
         # Transform if necessary
         state = self.get_state_barycentric() if to_bary else self.get_state()
 
@@ -74,8 +74,16 @@ class H5:
         mass[np.isnan(mass)]=0.0
         state[np.isnan(state)]=0.0
         
-        # Calculate the total energy against time
-        return Tools.compute_energy(state, mass, G)
+        if sim is not None:
+            # Calculate the total using the provided sim instance and C
+            n_rows, width = state.shape
+            energy = np.empty(n_rows) 
+            for t in range(n_rows):
+                energy[t] = sim.calculate_energy_supplied(state[t, : width // 2], state[t, width // 2 :], mass[t], G)
+            return energy
+        else:
+            # Calculate the total energy against time using Python
+            return Tools.compute_energy(state, mass, G)
 
 
     def get_semi_major(self):

@@ -111,7 +111,7 @@ def execute_simulation(output_file):
     d.display_2d_data(names=names, title=integrator, scatter=True, equal=True, to_helio=(integrator!='WisdomHolman'))
     d.display_semi_major(names=names, title=integrator, divisor=divisor, units=units)
     d.display_2d_e_and_i(names=names, divisor=divisor, units=units)
-    d.display_energy_delta(G=G, divisor=divisor, units=units, to_bary=(integrator=='WisdomHolman'))
+    d.display_energy_delta(G=G, divisor=divisor, units=units, to_bary=(integrator=='WisdomHolman'), sim=sim)
 
     h5.set_data(focus_name)
 

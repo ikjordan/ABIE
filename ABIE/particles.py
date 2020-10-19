@@ -254,6 +254,15 @@ class Particles(object):
                 raise ValueError('Particle %s not exist!' % item)
         return None
 
+    def balance_system(self):
+        """
+        Computes the velocity of the center of mass of the system, 
+        and subtracts that velocity from all particles in the system
+        """
+        com = self.get_center_of_mass()
+        for pid in range(0, self.N):
+            self.particles[pid].vel -= com.vel
+
     def get_center_of_mass(self, subset=None):
         """
         Compute the center-of-mass. If subset is not given, compute the
@@ -268,7 +277,7 @@ class Particles(object):
                 com_vel += (self.particles[pid].vel * self.particles[pid].mass)
             com_pos /= np.sum(self.masses)
             com_vel /= np.sum(self.masses)
-            return Particle(mass=np.sum(self.masses), pos=com_pos, vel=com_vel)
+            return Particle(mass=np.sum(self.masses), pos=com_pos, vel=com_vel, name='COM')
         else:
             subset_masses = 0.0
             for pid in subset:

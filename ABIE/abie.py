@@ -329,6 +329,9 @@ class ABIE(object):
                                              ptype=ptype, a=a, e=e, i=i, Omega=Omega,
                                              omega=omega, f=f, primary=primary)
 
+    def calculate_energy_supplied(self, pos, vel, mass, G):
+        return self.integrator.calculate_energy_supplied(pos, vel, mass, G)
+
 
 def main():
     parser = argparse.ArgumentParser()
