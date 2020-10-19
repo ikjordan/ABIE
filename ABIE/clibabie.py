@@ -48,6 +48,11 @@ class CLibABIE(object):
                         print("Need to build libabie.dll manually")
                         sys.exit(0)
 
+            # On Windows update path, for case where openmp.dll is not on path, but is in
+            # the same directory as libabie.dll
+            if platform.system() == 'Windows':
+                os.environ['PATH'] += ';'+ os.path.dirname(lib_path)
+
             # Finally in a position to load the C library - will throw exception if fails
             self.lib = ctypes.cdll.LoadLibrary(lib_path)
 
