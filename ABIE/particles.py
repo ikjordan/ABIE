@@ -256,12 +256,17 @@ class Particles(object):
 
     def balance_system(self):
         """
-        Computes the velocity of the center of mass of the system, 
-        and subtracts that velocity from all particles in the system
+        Sets velocity and position of COM to zero
+        Done by computing the velocity and position of the center of mass of 
+        the system, and subtracting that for all particles in the system. 
         """
         com = self.get_center_of_mass()
+        # Need to keep both copies of velocity and position in sync
         for pid in range(0, self.N):
-            self.particles[pid].vel -= com.vel
+            self.__particles[pid].vel -= com.vel
+            self.__velocities[3*pid:3*pid+3] = self.__particles[pid].vel
+            self.__particles[pid].pos -= com.pos
+            self.__positions[3*pid:3*pid+3] = self.__particles[pid].pos
 
     def get_center_of_mass(self, subset=None):
         """

@@ -60,34 +60,37 @@ def execute_simulation(output_file):
 
     # Set the momentum in the system to 0
     sim.particles.balance_system()
-
-    # Verify by displaying the centre of mass
-    com = sim.particles.get_center_of_mass()
-    print('System Mass: {} vx: {} vy: {} vz: {}'.format(com.mass, com.vx, com.vy, com.vy))
+    com_s = sim.particles.get_center_of_mass()
 
     sim.output_file = output_file
     sim.collision_output_file = os.path.splitext(output_file)[0] + '.collisions.txt'
     sim.close_encounter_output_file = os.path.splitext(output_file)[0] + '.ce.txt'
 
     # The output frequency
-    sim.store_dt = 100              # Log data every 100 years
+    sim.store_dt = 100              # Log time in years
 
     # The integration timestep (does not apply to Gauss-Radau15)
-    sim.h = 10                       
+    sim.h = 10
 
-    sim.buffer_len = 1000
+    total_time = 1000               # Total integration time in years
+
+    sim.buffer_len = 1000           # Number of logs to store in memory before writing them to file
 
     # initialize the integrator
     sim.initialize()
 
-    # perform the integration
-    divisor = 1000
-
     startTime = datetime.now()
-    sim.integrate(divisor)
+    sim.integrate(total_time)
     sim.stop()
     endTime = datetime.now()
     print("Time taken = {} seconds.".format(endTime - startTime))
+
+    # Display Start and Final centre of mass
+    com_e = sim.particles.get_center_of_mass()
+    print('Initial COM. Mass: {} x: {} y: {} z: {} vx: {} vy: {} vz: {}'.format(com_s.mass, com_s.x, com_s.y, com_s.z, 
+                                                                                com_s.vx, com_s.vy, com_s.vz))
+    print('Final COM. Mass: {} x: {} y: {} z: {} vx: {} vy: {} vz: {}'.format(com_e.mass, com_e.x, com_e.y, com_e.z, 
+                                                                              com_e.vx, com_e.vy, com_e.vz))
 
     h5 = H5(output_file)
 
