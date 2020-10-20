@@ -11,7 +11,8 @@ on the official code repository for the book. It is work in progress, but the in
 (free to non-commercial users) *done*
 4. Support MS Windows builds using gcc under msys2 (minGW 64 bit) *done*
 5. Add extra example files *in progress*
-6. Get the CUDA code working under Windows *to do*
+6. Get the CUDA code working under Windows *Done*
+7. Give option of using OpenMP on multi-core targets *Done for Windows*
 7. Make changes to `snapshot_serialization.py` to support windows, and allow it to be called 
 from Python programatically *done*
 
@@ -20,33 +21,45 @@ from Python programatically *done*
 some of the older integrator inplementations in Python. These issues have now been addressed, and
 all integrators should now work in both `ctypes` (where implemented) and `numpy` mode
 2. Issues surrounding division that broke execution when using Python 3 have been corrected
-3. Addressed issues with timestep and energy delta calculations in the `Wisdom Holman` integrator
-4. The package configuration has been modified, so that code can be called in the same way, regardless
+3. Some C arrays were declared on the stack. This caused stack overflows with large particle simulations. 
+Heap memory is now used instead
+4. Addressed issues with timestep and energy delta calculations in the `Wisdom Holman` integrator
+5. The package configuration has been modified, so that code can be called in the same way, regardless
 of whether the `astroabie` package has been installed. Examples have been moved into a separate
 directory
-5. Added an option to control the amount of data written to the console during a run
-6. Loading the shared library from the installed package has been refined, to allow for instances where
+6. Added an option to control the amount of data written to the console during a run
+7. Loading the shared library from the installed package has been refined, to allow for instances where
 the library name is decorated by the architecture during installation
-7. A MS Visual Studio 2019 solution is provided. This creates a DLL file from the C code, and allows easy 
-access to the debugger for both the Python and C code 
-8. ABIE uses C Variable Length Arrays (VLA), which are not supported by the MSVC compiler (MSVC is not
-completely C99 compliant). Therefore the LLVM (`Clang-cl`) tool chain is used with Visual Studio 2019
-9. The code has been tested under MS Windows 10, MinGW 64-bit running on Windows 10, Ubuntu 20.04 running
+8. A MS Visual Studio 2019 solution is provided. This creates a DLL file from the C code, and allows easy 
+access to the debugger for both the Python and C code
+9. A CUDA MSVC 2019 solution is also provided. Adding a CUDA aware build option to MSVC precludes that solution
+being loaded on a system where CUDA is not installed. Therefore two solutions are provided `ABIE` and
+`ABIE_CUDA`. CUDA is enabled in `ABIE_CUDA` when the `GPU` preprocessor directive is added
+10. ABIE uses C Variable Length Arrays (VLA), which are not supported by the MSVC compiler (MSVC is not
+completely C99 compliant). Therefore the LLVM (`clang-cl`) tool chain is used with Visual Studio 2019
+11. The `clang-cl` compiler does support OpenMP, but the required DLL is not installed automatically. `libomp.dll`
+can be found in the LLVM section of the MSVC 2019 installation. Either copy it to the DLL directory for your system,
+or paste a copy into the same directory as `libabie.dll`. OpenMP is enabled when the `OPENMP` preprocessor 
+directive is added
+12. The solutions are configured so that the compiler generates AVX instructions 
+13. The code has been tested under MS Windows 10, MinGW 64-bit running on Windows 10, Ubuntu 20.04 running
 in a VirtualBox VM and a 4GB Raspberry PI 4 running Raspberry Pi OS
-10. I do not have acccess to an Apple Mac, so I may have inadvertantly broken support for that platform
-11. To make intellisense work correctly for C99 code with `Clang` an additional option of `-std=c99` is set. 
+14. I do not have acccess to an Apple Mac, so I may have inadvertantly broken support for that platform
+15. To make intellisense work correctly for C99 code with `Clang` an additional option of `-std=c99` is set. 
 This is valid in `Clang`, and triggers intellisense to work correctly, but is ignored in `Clang-cl`, and so
 causes a warning to be generated
-12. Clang supports 80 bit `long double`, but in Clang-cl `long double` is set to 64 bits for 
+16. Clang supports 80 bit `long double`, but in Clang-cl `long double` is set to 64 bits for 
 compatibility with MSVC. Use MinGW64 to build a DLL that will provide 80 bit `long double` support under Windows
-13. The C files in the project are built into a DLL. I failed to configure `setup.py` to automatically 
+17. The C files in the project are built into a DLL. I failed to configure `setup.py` to automatically 
 trigger a build using `Clang`, so before running `setup.py` `libabie.dll` should be built in Visual Studio.
 The DLL will then be packaged correctly
-14. Under MinGW 64bit the DLL (`libabie.dll`) can be built by invoking `make`. This should be done before 
+18. Under MinGW 64bit the DLL (`libabie.dll`) can be built by invoking `make`. This should be done before 
 running `setup.py`. The DLL will then be packaged correctly
-15. Note that there appears to be an issue in on the Raspberry Pi, where specifying dependencies can cause 
+19. Note that there appears to be an issue in on the Raspberry Pi, where specifying dependencies can cause 
 `Cython` to fail. The workaround is to comment the dependencies out from `setup.py` and install them
 manually
+20. The `particles` class has been extended to give an option to position the COM of the system at the origin 
+with zero velocity
 
 ### MinGW 64bit - h5py issue
 Currently (September 2020) there is a known issue with h5py under msys2 minGW64. 
@@ -94,14 +107,12 @@ The original example supplied in the base repository, extended to call a modifie
 `snapshot_serialization.py` to convert the `h5` data file and then use `Matplotlib` to plot the results in 3d
 
 ### `simple.py`
-Two simple 3 body cases, which become unstable over time. These were originally described in the original *Moving Stars Around* book 
-that can be found at:  
-http://www.artcompsci.org/msa/web/vol_1/v1_web/v1_web.html  
-
-Uses `Matplotlib` to plot the results in 2d
+Five simple 2 to 5 body cases, some of which become unstable over time. Uses `Matplotlib` to plot the 
+results in 2d
 
 ### `solar.py`
-Uses the solar system position and velocity information provided in *Moving Planets Around* to simulate the solar system. Uses `Matplotlib`
+Uses the solar system position and velocity information provided in *Moving Planets Around* to 
+simulate the solar system. Uses `Matplotlib`
 to plot the results in 2d.  
 By default it plots the solar system for 1000 years. By setting the variable `million`
 to `True` the simulation will run for 1 millions years and 
@@ -112,9 +123,20 @@ are converted to Baryocentric, so that the energy calculation is consistent over
 
 ### `saturn.py`
 Simulates two moons of Saturn - Epimetheus and Janus, which are co-orbital. The change in
-orbital radius every 4 to 5 years as the moons swap is graphed
-using `Matplotlib`
+orbital radius every 4 to 5 years can be seen as the moons approach each other. As they get close the semimajor axis of the 
+trailing moon increases, until it is larger
+then that of the leading moon. At that point is falls further behind the leading moon.
+This can be seen in the graph of the relative angle between the bodies, which never goes to 0. 
  
+### `oort.py`
+Based on the example in chapter 10.
+
+### `kuiper.py`
+A simulation comprising the Sun, Neptune and a large number of small Kuiper belt like objects. The simulation shows some
+of the the objects falling into resonance with Neptune. See e.g. https://en.wikipedia.org/wiki/Resonant_trans-Neptunian_object
+
+Illustrates the use of CUDA and OpenMP in more demanding simulations.
+
 #### `display.py`
 Helper class to display multiple graphs using `matplotlib`  
 

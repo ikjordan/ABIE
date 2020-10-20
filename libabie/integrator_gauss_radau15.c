@@ -200,6 +200,7 @@ void compute_bs_from_gs(real g[][dim], int ih, size_t N, real b[][dim]){
 
 
 void refine_bs(real b[][dim], real q, real E[][dim], size_t N){
+#if 0    
     real bd[nh - 1][3 * N];
     static int inited = 0;
     if (inited != 0){
@@ -215,6 +216,7 @@ void refine_bs(real b[][dim], real q, real E[][dim], size_t N){
             }
         }
     }
+#endif
 
     real q2 = q * q;
     real q3 = q2 * q;
@@ -235,7 +237,8 @@ void refine_bs(real b[][dim], real q, real E[][dim], size_t N){
 
     for (int i = 0; i < 3 * N; i++) {
         for (int j = 0; j < 7; j++) {
-            b[j][i] = E[j][i] + bd[j][i];
+            //b[j][i] = E[j][i] + bd[j][i];
+            b[j][i] = E[j][i];
         }
     }
     return;
