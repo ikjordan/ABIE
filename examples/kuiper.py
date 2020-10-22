@@ -51,12 +51,12 @@ def execute_simulation(output_file):
     sim.add(mass=5.15e-5, a=30.07, e=0.0086, name='Neptune')
 
     # Add the kuiper belt particles - initially uniformally distributed
-    n_oc = 4000
+    n_oc = 1000
     start_semi = np.linspace(33.501, 53.501, n_oc, endpoint=False)
 
     # Circular orbits with no inclination
     for i in range(n_oc):
-        sim.add(1e-15, a=start_semi[i], e=0, i=0, primary='Sun', name=('test_particle{}'.format(i)))
+        sim.add(mass=1e-15, a=start_semi[i], e=0, i=0, primary='Sun', name=('test_particle{}'.format(i)))
 
     # Set the momentum in the system to 0
     sim.particles.balance_system()

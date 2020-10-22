@@ -60,7 +60,7 @@ def execute_simulation(output_file):
     inc = np.random.uniform(-np.pi, np.pi, n_oc)
 
     for i in range(n_oc):
-        sim.add(0, a=semi[i], e=ecc[i], i=inc[i], primary='Sun', name=('test_particle{}'.format(i)))
+        sim.add(mass=0, a=semi[i], e=ecc[i], i=inc[i], primary='Sun', name=('test_particle{}'.format(i)))
 
     # The output file name. If not specified, the default is 'data.hdf5'
     sim.output_file = output_file

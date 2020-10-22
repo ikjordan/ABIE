@@ -237,8 +237,11 @@ void refine_bs(real b[][dim], real q, real E[][dim], size_t N){
 
     for (int i = 0; i < 3 * N; i++) {
         for (int j = 0; j < 7; j++) {
-            //b[j][i] = E[j][i] + bd[j][i];
+#if 0
+            b[j][i] = E[j][i] + bd[j][i];
+#else
             b[j][i] = E[j][i];
+#endif
         }
     }
     return;
