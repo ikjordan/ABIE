@@ -36,6 +36,8 @@
 #endif
 #endif
 
+#define USE_PARALLEL 256
+
 // Common variables
 real *pos_global;  // the position state vector specified by the users
 real *vel_global;  // the velocity state vector specified by the users

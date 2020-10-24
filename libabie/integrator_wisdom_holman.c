@@ -408,24 +408,54 @@ void compute_accel(real *pos, real *jacobi_pos, real *masses, size_t nbodies, re
 
     // Compute final part of the Hamiltonian:
     real accel3[3 * nbodies];
-    real diff[3];
-    real aux;
-    for (size_t i = 0; i < 3 * nbodies; i++) accel3[i] = 0.0;
-    for (size_t i = 1; i < nbodies - 1; i++) {
-        for (size_t j = i + 1; j < nbodies; j++) {
-            diff[0] = pos[3 * j] - pos[3 * i];
-            diff[1] = pos[3 * j + 1] - pos[3 * i + 1];
-            diff[2] = pos[3 * j + 2] - pos[3 * i + 2];
-            aux = 1.0 / pow(vector_norm(diff, 3), 3.0);
-            accel3[3 * j] -= G * masses[i] * aux * diff[0];
-            accel3[3 * j + 1] -= G * masses[i] * aux * diff[1];
-            accel3[3 * j + 2] -= G * masses[i] * aux * diff[2];
-            accel3[3 * i] += G * masses[j] * aux * diff[0];
-            accel3[3 * i + 1] += G * masses[j] * aux * diff[1];
-            accel3[3 * i + 2] += G * masses[j] * aux * diff[2];
+
+    for (size_t i = 0; i < 3 * nbodies; i++)
+        accel3[i] = 0.0;
+
+#if OPENMP
+    if (nbodies > USE_PARALLEL)
+    {
+#pragma omp parallel for reduction(+: accel3[:3*nbodies]) schedule(dynamic)
+        for (size_t i = 1; i < nbodies - 1; i++) {
+            for (size_t j = i + 1; j < nbodies; j++) {
+                real diff[3];
+
+                diff[0] = pos[3 * j] - pos[3 * i];
+                diff[1] = pos[3 * j + 1] - pos[3 * i + 1];
+                diff[2] = pos[3 * j + 2] - pos[3 * i + 2];
+                real aux = 1.0 / pow(vector_norm(diff, 3), 3.0);
+
+                accel3[3 * j] -= G * masses[i] * aux * diff[0];
+                accel3[3 * j + 1] -= G * masses[i] * aux * diff[1];
+                accel3[3 * j + 2] -= G * masses[i] * aux * diff[2];
+
+                accel3[3 * i] += G * masses[j] * aux * diff[0];
+                accel3[3 * i + 1] += G * masses[j] * aux * diff[1];
+                accel3[3 * i + 2] += G * masses[j] * aux * diff[2];
+            }
         }
     }
+    else
+#endif
+    {
+        real diff[3];
+        real aux;
 
+        for (size_t i = 1; i < nbodies - 1; i++) {
+            for (size_t j = i + 1; j < nbodies; j++) {
+                diff[0] = pos[3 * j] - pos[3 * i];
+                diff[1] = pos[3 * j + 1] - pos[3 * i + 1];
+                diff[2] = pos[3 * j + 2] - pos[3 * i + 2];
+                aux = 1.0 / pow(vector_norm(diff, 3), 3.0);
+                accel3[3 * j] -= G * masses[i] * aux * diff[0];
+                accel3[3 * j + 1] -= G * masses[i] * aux * diff[1];
+                accel3[3 * j + 2] -= G * masses[i] * aux * diff[2];
+                accel3[3 * i] += G * masses[j] * aux * diff[0];
+                accel3[3 * i + 1] += G * masses[j] * aux * diff[1];
+                accel3[3 * i + 2] += G * masses[j] * aux * diff[2];
+            }
+        }
+    }
     // Add all contributions:
     for (size_t i = 0; i < 3 * nbodies; i++) {
         accel[i] = accel_ind[i] + accel_cent[i] + accel2[i] + accel3[i];

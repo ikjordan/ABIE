@@ -37,6 +37,45 @@ size_t ode_n_body_first_order(real *vec, size_t N, real G, const real *masses, r
 }
 
 size_t ode_n_body_second_order(const real vec[], size_t N, real G, const real masses[], const real radii[], real acc[]) {
+    // Calculate the combined accelerations onto particle j
+    // i.e. j is the sink, k is the source
+    for (int j = 0; j < N; j++) {
+        acc[j * 3] = 0;
+        acc[j * 3 + 1] = 0;
+        acc[j * 3 + 2] = 0;
+    }
+
+    for (int j = 0; j < N; j++){
+        if (masses[j] < 0.0) {
+            // if the mass is negative, the particle is deleted
+            continue;
+        }
+        for (int k = j+1; k < N; k++) {
+            if (masses[k] < 0.0) continue;
+            real dx = vec[j * 3] - vec[k * 3];
+            real dy = vec[j * 3 + 1] - vec[k * 3 + 1];
+            real dz = vec[j * 3 + 2] - vec[k * 3 + 2];
+
+            real rel_sep2 = dx * dx + dy * dy + dz * dz;
+            real rel_sep3 = G / (sqrt(rel_sep2) * rel_sep2);
+
+            real ax = dx * rel_sep3;
+            real ay = dy * rel_sep3;
+            real az = dz * rel_sep3;
+            
+            acc[j * 3] -= ax * masses[k];
+            acc[j * 3 + 1] -= ay * masses[k];
+            acc[j * 3 + 2] -= az * masses[k];
+
+            acc[k * 3] += ax * masses[j];
+            acc[k * 3 + 1] += ay * masses[j];
+            acc[k * 3 + 2] += az * masses[j];
+        }
+    }
+    return EXIT_NORMAL;
+}
+
+inline size_t ode_n_body_second_order_massless(const real vec[], size_t N, real G, const real masses[], const real radii[], real acc[]) {
     real x, y, z;
     real dx, dy, dz;
     real ax, ay, az;
@@ -44,7 +83,7 @@ size_t ode_n_body_second_order(const real vec[], size_t N, real G, const real ma
 
     // Calculate the combined accelerations onto particle j
     // i.e. j is the sink, k is the source
-
+    // This version is more efficient for massless particles
     for (int j = 0; j < N; j++){
         if (masses[j] < 0.0) {
             // if the mass is negative, the particle is deleted
@@ -76,14 +115,54 @@ size_t ode_n_body_second_order(const real vec[], size_t N, real G, const real ma
     return EXIT_NORMAL;
 }
 
-inline size_t ode_n_body_second_order_omp(const real vec[], size_t N, real G, const real masses[], const real radii[], real acc[]) {
-    real dx, dy, dz;
-    real GM;
-
+size_t ode_n_body_second_order_omp(const real vec[], size_t N, real G, const real masses[], const real radii[], real acc[]) {
     // Calculate the combined accelerations onto particle j
     // i.e. j is the sink, k is the source
+    for (int j = 0; j < N; j++) {
+        acc[j * 3] = 0;
+        acc[j * 3 + 1] = 0;
+        acc[j * 3 + 2] = 0;
+    }
+
 #if OPENMP
-#pragma omp parallel for private(dx, dy, dz, GM)
+#pragma omp parallel for reduction(+: acc[:3*N]) schedule(dynamic)
+#endif
+    for (int j = 0; j < N; j++) {
+        if (masses[j] < 0.0) {
+            // if the mass is negative, the particle is deleted
+            continue;
+        }
+        for (int k = j + 1; k < N; k++) {
+            if (masses[k] < 0.0) continue;
+            real dx = vec[j * 3] - vec[k * 3];
+            real dy = vec[j * 3 + 1] - vec[k * 3 + 1];
+            real dz = vec[j * 3 + 2] - vec[k * 3 + 2];
+
+            real rel_sep2 = dx * dx + dy * dy + dz * dz;
+            real rel_sep3 = G / (sqrt(rel_sep2) * rel_sep2);
+
+            real ax = dx * rel_sep3;
+            real ay = dy * rel_sep3;
+            real az = dz * rel_sep3;
+
+            acc[j * 3] -= ax * masses[k];
+            acc[j * 3 + 1] -= ay * masses[k];
+            acc[j * 3 + 2] -= az * masses[k];
+
+            acc[k * 3] += ax * masses[j];
+            acc[k * 3 + 1] += ay * masses[j];
+            acc[k * 3 + 2] += az * masses[j];
+        }
+    }
+    return EXIT_NORMAL;
+}
+
+inline size_t ode_n_body_second_order_omp_massless(const real vec[], size_t N, real G, const real masses[], const real radii[], real acc[]) {
+    // Calculate the combined accelerations onto particle j
+    // i.e. j is the sink, k is the source
+    // This version is more efficient for massless particles
+#if OPENMP
+#pragma omp parallel for
 #endif
     for (int j = 0; j < N; j++) {
         if (masses[j] < 0.0) {
@@ -97,10 +176,10 @@ inline size_t ode_n_body_second_order_omp(const real vec[], size_t N, real G, co
         for (int k = 0; k < N; k++)
         {
             if (j == k || masses[k] <= 0.0) continue;
-            GM = G * masses[k];
-            dx = vec[j * 3] - vec[k * 3];
-            dy = vec[j * 3 + 1] - vec[k * 3 + 1];
-            dz = vec[j * 3 + 2] - vec[k * 3 + 2];
+            real GM = G * masses[k];
+            real dx = vec[j * 3] - vec[k * 3];
+            real dy = vec[j * 3 + 1] - vec[k * 3 + 1];
+            real dz = vec[j * 3 + 2] - vec[k * 3 + 2];
             real rel_sep2 = dx * dx + dy * dy + dz * dz;
             real rel_sep = sqrt(rel_sep2);
             real rel_sep3 = rel_sep * rel_sep2;
@@ -119,7 +198,7 @@ inline size_t ode_n_body_second_order_omp(const real vec[], size_t N, real G, co
 size_t calculate_accelerations(const real pos[], const real vel[], size_t N, real G, const real masses[], const real radii[], real acc[]) {
     // calculate the accelerations due to N bodies
 #ifdef GPU
-    if (N > 256) {
+    if (N > USE_PARALLEL) {
         // Use GPU to carry out the force calculation when N is large
         ode_n_body_second_order_gpu(pos, N, G, masses, radii, acc);
     } else {
@@ -129,7 +208,7 @@ size_t calculate_accelerations(const real pos[], const real vel[], size_t N, rea
 #elif SAPPORO
     ode_n_body_second_order_sapporo(pos, N, G, masses, radii, acc);
 #elif OPENMP
-    if(N>256)
+    if(N>USE_PARALLEL)
     {
         ode_n_body_second_order_omp(pos, N, G, masses, radii, acc);
     } else {
@@ -253,7 +332,7 @@ inline size_t check_collisions_close_encounters_serial(const real* vec, const re
 
 size_t check_collisions_close_encounters(const real* vec, const real radii[], size_t N, real t) {
 #if OPENMP
-    if (N > 256)
+    if (N > USE_PARALLEL)
         return check_collisions_close_encounters_omp(vec, radii, N, t);
     else
 #endif
