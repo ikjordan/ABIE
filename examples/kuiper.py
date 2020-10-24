@@ -33,8 +33,8 @@ def execute_simulation(output_file):
     # integrator = 'LeapFrog'
     # integrator = 'AdamsBashforth'
     # integrator = 'RungeKutta'
-    # integrator = 'WisdomHolman'
-    integrator = 'GaussRadau15'
+    integrator = 'WisdomHolman'
+    # integrator = 'GaussRadau15'
     sim.integrator = integrator
 
 
@@ -70,7 +70,7 @@ def execute_simulation(output_file):
     sim.store_dt = 100              # Log time in years
 
     # The integration timestep (does not apply to Gauss-Radau15)
-    sim.h = 10
+    sim.h = 5
 
     total_time = 1000               # Total integration time in years
 
@@ -103,13 +103,13 @@ def execute_simulation(output_file):
 
     # Show initial distribution
     names = ['Initial']
-    d.display_histogram(start_semi, 31, 56, 500, names=names, title="Kuiper Initial Distribution", units='AU')
+    d.display_histogram(start_semi, 31, 56, 250, names=names, title="Kuiper Initial Distribution", units='AU')
 
     # Display distribution at mid and full simulation time
     names = ['Mid', 'Full']
     x, y = np.shape(semi)
 
-    d.display_histogram(np.column_stack((semi[(x-1)//2, 2:], semi[-1, 2:])), 31, 56, 500, names=names, title="Kuiper Mid and Full Distribution", units='AU')
+    d.display_histogram(np.column_stack((semi[(x-1)//2, 2:], semi[-1, 2:])), 31, 56, 250, names=names, title="Kuiper Mid and Full Distribution", units='AU')
     d.display_2d_scatter(np.column_stack((semi[(x-1)//2, 2:], semi[-1, 2:])),
                          np.column_stack((ecc[(x-1)//2, 2:], ecc[-1, 2:])), 
                          names=names, title="$e$ for Distribution", y_units='AU')
@@ -127,7 +127,7 @@ def execute_simulation(output_file):
     y0 = np.empty((x, 2 + n))
 
     # Extract the x and y positions
-    state = h5.get_state()
+    state = h5.get_state_barycentric() if integrator=='WisdomHolman' else h5.get_state()
     x0 = state[:, ind]
     y0 = state[:, (ind + 1)]
 

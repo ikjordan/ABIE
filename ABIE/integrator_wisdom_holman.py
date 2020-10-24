@@ -21,7 +21,7 @@ class WisdomHolman(Integrator):
                                self.CONST_G, self.CONST_C)
 
         # Call the base method, as particle positions and velocities are not stored in self.particles
-        self.energy_init = WisdomHolman.compute_energy(helio, self.particles.masses, self.particles.N, self.CONST_G)
+        self.energy_init = self.compute_energy(helio, self.particles.masses, self.particles.N, self.CONST_G)
 
     def integrate_ctypes(self, to_time=None):
         ret = 0
@@ -92,7 +92,7 @@ class WisdomHolman(Integrator):
 
     def calculate_energy(self):
         helio = np.concatenate((self.particles.positions, self.particles.velocities))
-        return WisdomHolman.compute_energy(helio, self.particles.masses, self.particles.N, self.CONST_G)
+        return self.compute_energy(helio, self.particles.masses, self.particles.N, self.CONST_G)
 
     def propagate_wh(self, helio, t, h, store_dt, masses, N, accel, G):
         pass
@@ -512,24 +512,27 @@ class WisdomHolman(Integrator):
                 - helio[nbodies * 3: (nbodies + 1) * 3]
         return helio
 
-    @staticmethod
-    def compute_energy(helio, masses, nbodies, G):
+    def compute_energy(self, helio, masses, nbodies, G):
         # Convert to barycentric:
         x = WisdomHolman.helio2bary(helio, masses, nbodies)
 
         pos = x[0: nbodies * 3]
         vel = x[nbodies * 3:]
 
-        # Compute energy
-        energy = 0.0
-        for i in range(0, nbodies):
-            energy += 0.5 * masses[i] * np.linalg.norm(x[(nbodies + i) * 3:(nbodies + 1 + i) * 3]) ** 2
-            for j in range(0, nbodies):
-                if (i == j):
-                    continue
-                energy -= .5 * G * masses[i] * masses[j] / np.linalg.norm(x[i * 3: 3 + i * 3] - x[j * 3: 3 + j * 3])
+        # Use C version to calculate energy if available
+        if self.acceleration_method == 'ctypes':
+            return self.libabie.get_total_energy_supplied(pos, vel, masses, G)
+        else:
+            # Compute energy
+            energy = 0.0
+            for i in range(0, nbodies):
+                energy += 0.5 * masses[i] * np.linalg.norm(x[(nbodies + i) * 3:(nbodies + 1 + i) * 3]) ** 2
+                for j in range(0, nbodies):
+                    if (i == j):
+                        continue
+                    energy -= .5 * G * masses[i] * masses[j] / np.linalg.norm(x[i * 3: 3 + i * 3] - x[j * 3: 3 + j * 3])
 
-        return energy
+            return energy
 
     @staticmethod
     def initial_step_size(x, masses, nbodies, ibody, factor, G):
