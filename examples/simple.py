@@ -25,7 +25,7 @@ def main():
     # integrator = 'AdamsBashforth'
     # integrator =  'RungeKutta'
     # integrator = 'WisdomHolman'
-    # integrator = 'GaussRadau15'
+    integrator = 'GaussRadau15'
 
 
     count = 0

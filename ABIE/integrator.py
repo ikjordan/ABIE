@@ -109,6 +109,14 @@ class Integrator(object):
                                          close_encounter_distance=self.close_encounter_distance)
             self.buf.initialize_buffer(self.particles.N)
 
+            # Write the initial data set
+            print("Write initial")
+            elem = self.particles.calculate_aei()
+            self.buf.store_state(self.t, self.particles.positions, self.particles.velocities, self.particles.masses,
+                                 radii=self.particles.radii, names=self.particles.hashes, ptypes=self.particles.ptypes,
+                                 a=elem[:, 0], e=elem[:, 1], i=elem[:, 2])
+
+
     def stop(self):
         if self.__buf is not None:
             self.__buf.close()
@@ -171,7 +179,7 @@ class Integrator(object):
             # the self.t is updated by the subclass
             # energy check
             self.__energy = self.calculate_energy()
-            print(('t = %f, N = %d, E = %g, dE/E0 = %g' % (self.t, self.particles.N, self.__energy, np.abs(self.__energy - self.energy_init) / self.energy_init)))
+            print(('t = %f, N = %d, E = %g, dE/E0 = %g' % (self.t, self.particles.N, self.__energy, (self.__energy - self.energy_init) / self.energy_init)))
             if os.path.isfile('STOP'):
                 break
 
@@ -182,7 +190,7 @@ class Integrator(object):
             #     break
         # if self.t == self.t_end:
         #     self.__energy = self.calculate_energy()
-        #     print('t = %f, E/E0 = %g' % (self.t, np.abs(self.__energy - self.__energy_init) / self.__energy_init))
+        #     print('t = %f, E/E0 = %g' % (self.t, (self.__energy - self.__energy_init) / self.__energy_init))
         return ret
 
     def integrate_numpy(self, to_time):

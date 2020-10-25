@@ -11,7 +11,7 @@ class DataIO(object):
         self.buf_len = buf_len
         self.buf_initialized = False
         self.buf_t = None  # for the time vector
-        self.store_t = 0.0  # the current time of the snapshot data in the buffer
+        self.store_t = -1.0  # the current time of the snapshot data in the buffer
         self.buf_energy = None  # store the total energy
         self.buf_state = None  # for x, y, z, vx, vy, vz
         self.buf_x = None
