@@ -23,6 +23,13 @@ class WisdomHolman(Integrator):
         # Call the base method, as particle positions and velocities are not stored in self.particles
         self.energy_init = self.compute_energy(helio, self.particles.masses, self.particles.N, self.CONST_G)
 
+        # Store the initial state - note particle positions and velocities are not stored in self.particles
+        elem = self.particles.calculate_aei()
+        self.buf.store_state(self.t, pos, vel, self.particles.masses,
+                             radii=self.particles.radii, names=self.particles.hashes, ptypes=self.particles.ptypes,
+                             a=elem[:, 0], e=elem[:, 1], i=elem[:, 2])
+
+
     def integrate_ctypes(self, to_time=None):
         ret = 0
         try:

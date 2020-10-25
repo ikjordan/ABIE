@@ -109,14 +109,6 @@ class Integrator(object):
                                          close_encounter_distance=self.close_encounter_distance)
             self.buf.initialize_buffer(self.particles.N)
 
-            # Write the initial data set
-            print("Write initial")
-            elem = self.particles.calculate_aei()
-            self.buf.store_state(self.t, self.particles.positions, self.particles.velocities, self.particles.masses,
-                                 radii=self.particles.radii, names=self.particles.hashes, ptypes=self.particles.ptypes,
-                                 a=elem[:, 0], e=elem[:, 1], i=elem[:, 2])
-
-
     def stop(self):
         if self.__buf is not None:
             self.__buf.close()
@@ -168,8 +160,10 @@ class Integrator(object):
         ret = 0
         # launch the integration
         while self.t < self.t_end:
+            # If initial energy has not been calculated then do so, and store initial state
             if self.energy_init == 0:
                 self.energy_init = self.calculate_energy()
+                self.store_state()
             #next_t = self.t + dt - ((self.t + dt) % dt)
             next_t = self.t + dt
             if self.acceleration_method == 'numpy':
