@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="additional_forces.c">
+      <Filter>Souce Code</Filter>
+    </ClCompile>
+    <ClCompile Include="integrator_runge_kutta.c">
+      <Filter>Souce Code</Filter>
+    </ClCompile>
+    <ClCompile Include="integrator_wisdom_holman.c">
+      <Filter>Souce Code</Filter>
+    </ClCompile>
+    <ClCompile Include="integrator_gauss_radau15.c">
+      <Filter>Souce Code</Filter>
+    </ClCompile>
+    <ClCompile Include="common.c">
+      <Filter>Souce Code</Filter>
+    </ClCompile>
+    <ClCompile Include="openclforce.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="common.h" />
+    <ClInclude Include="helper_cuda.h" />
+    <ClInclude Include="helper_string.h" />
+    <ClInclude Include="integrator_gauss_radau15.h" />
+    <ClInclude Include="integrator_runge_kutta.h" />
+    <ClInclude Include="integrator_wisdom_holman.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Souce Code">
+      <UniqueIdentifier>{c93d328c-5059-468e-bd35-10fdcd30ca4c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

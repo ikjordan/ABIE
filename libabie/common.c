@@ -205,6 +205,15 @@ size_t calculate_accelerations(const real pos[], const real vel[], size_t N, rea
         // Switch to CPU when N is small
         ode_n_body_second_order(pos, N, G, masses, radii, acc);
     }
+#elif OPENCL
+    if (N > USE_PARALLEL) {
+        // Use OpenCL to carry out the force calculation when N is large
+        ode_n_body_second_order_opencl(pos, N, G, masses, radii, acc);
+    }
+    else {
+        // Switch to CPU when N is small
+        ode_n_body_second_order(pos, N, G, masses, radii, acc);
+    }
 #elif SAPPORO
     ode_n_body_second_order_sapporo(pos, N, G, masses, radii, acc);
 #elif OPENMP
@@ -603,6 +612,8 @@ int finalize_code() {
     //
 #ifdef GPU
     gpu_finalize();
+#elif OPENCL
+    opencl_finalize();
 #endif
 
     return 0;

@@ -107,6 +107,10 @@ size_t calculate_post_newtonian(const real pos[], const real vel[], size_t N, re
 size_t ode_n_body_second_order_gpu(const real *vec, size_t N, real G, const real *masses, const real *radii, real *acc);
 void gpu_init(int N);
 void gpu_finalize();
+#else
+size_t ode_n_body_second_order_opencl(const real* vec, size_t N, real G, const real* masses, const real* radii, real* acc);
+void opencl_init(int N);
+void opencl_finalize();
 #endif
 
 size_t check_collisions_close_encounters(const real *vec, const real radii[], size_t N, real t);
