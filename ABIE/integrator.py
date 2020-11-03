@@ -164,8 +164,7 @@ class Integrator(object):
             if self.energy_init == 0:
                 self.energy_init = self.calculate_energy()
                 self.store_state()
-            #next_t = self.t + dt - ((self.t + dt) % dt)
-            next_t = self.t + dt
+            next_t = min(self.t + dt, self.t_end)
             if self.acceleration_method == 'numpy':
                 ret = self.integrate_numpy(next_t)
             elif self.acceleration_method == 'ctypes':

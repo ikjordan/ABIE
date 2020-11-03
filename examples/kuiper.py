@@ -70,11 +70,11 @@ def execute_simulation(output_file):
     sim.store_dt = 100              # Log time in years
 
     # The integration timestep (does not apply to Gauss-Radau15)
-    sim.h = 5
+    sim.h = 2
 
     total_time = 1000               # Total integration time in years
 
-    sim.buffer_len = 1000           # Number of logs to store in memory before writing them to file
+    sim.buffer_len = 100            # Number of logs to store in memory before writing them to file
 
     # initialize the integrator
     sim.initialize()
@@ -86,10 +86,11 @@ def execute_simulation(output_file):
     print("Time taken = {} seconds.".format(endTime - startTime))
 
     # Display Start and Final centre of mass
-    com_e = sim.particles.get_center_of_mass()
     print('Initial COM. Mass: {} x: {} y: {} z: {} vx: {} vy: {} vz: {}'.format(com_s.mass, com_s.x, com_s.y, com_s.z, 
                                                                                 com_s.vx, com_s.vy, com_s.vz))
-    print('Final COM. Mass: {} x: {} y: {} z: {} vx: {} vy: {} vz: {}'.format(com_e.mass, com_e.x, com_e.y, com_e.z, 
+    if integrator!='WisdomHolman':
+        com_e = sim.particles.get_center_of_mass()
+        print('Final COM. Mass: {} x: {} y: {} z: {} vx: {} vy: {} vz: {}'.format(com_e.mass, com_e.x, com_e.y, com_e.z, 
                                                                               com_e.vx, com_e.vy, com_e.vz))
 
     h5 = H5(output_file)

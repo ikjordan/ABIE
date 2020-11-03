@@ -16,7 +16,9 @@
     <ClCompile Include="common.c">
       <Filter>Souce Code</Filter>
     </ClCompile>
-    <ClCompile Include="openclforce.c" />
+    <ClCompile Include="openclforce.c">
+      <Filter>Souce Code</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common.h" />
@@ -30,5 +32,9 @@
     <Filter Include="Souce Code">
       <UniqueIdentifier>{c93d328c-5059-468e-bd35-10fdcd30ca4c}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="force_kernel_shared.cl" />
+    <None Include="force_kernel.cl" />
   </ItemGroup>
 </Project>

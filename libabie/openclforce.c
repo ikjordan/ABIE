@@ -1,6 +1,7 @@
 #ifdef OPENCL
 
-//#define USE_SHARED
+#define USE_SHARED
+
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,10 +10,8 @@
 #include <CL/cl_ext.h>
 #include "common.h"
 
-#define BLOCK_SIZE 32
 #define MAX_SOURCE_SIZE 0x10000
 #define MAX_PLATFORMS 4
-
 
 static cl_mem pos_dev = NULL;
 static cl_mem acc_dev = NULL;
@@ -26,13 +25,20 @@ static cl_program program = NULL;
 static bool inited = false;
 static bool built = false;
 static int N_store = 0;
-static int blockSize = BLOCK_SIZE;
-static int numBlocks = 0;
+static int pos_size = 0;
 
 #define EPSILON 1e-200;
 
 #ifdef USE_SHARED
-int sharedMemSize = 0;
+static int numBlocks = 0;
+static int sharedMemSize = 0;
+#define BLOCK_X 32
+#define THREADS_PER_BODY 8
+#define FILE_NAME "force_kernel_shared.cl"
+#define KERNEL_NAME "calculate_force_shared_MT"
+#else
+#define FILE_NAME "force_kernel.cl"
+#define KERNEL_NAME "calculate_force"
 #endif
 
 void opencl_build(void);
@@ -44,21 +50,22 @@ void opencl_init(int N)
     if (inited && N==N_store) 
         return;
 
-    printf("  opencl_init N=%d  ", N);
+    printf("  opencl_init N=%d, ", N);
     opencl_build();
 
     // Clean up anything used previously
     opencl_clear_buffers();
 
-    numBlocks = ((int)N + blockSize - 1) / blockSize;
-
 #ifdef USE_SHARED
+    sharedMemSize = BLOCK_X * THREADS_PER_BODY * 4 * sizeof(cl_double4);
+    numBlocks = ((int)N + BLOCK_X - 1) / BLOCK_X;
+
     // Create a new data set - need to round up the size
     // of the pos block to multiple of block size and zero it (so mass is 0)
-    int pos_size = numBlocks * blockSize;
-    sharedMemSize = blockSize * sizeof(double4); // 4 doubles for pos
+    pos_size = numBlocks * BLOCK_X;
+    printf("Pos Size: %i, ", pos_size);
 #else
-    int pos_size = N;
+    pos_size = N;
 #endif
 
     // Allocate the data blocks
@@ -73,15 +80,15 @@ void opencl_init(int N)
     memset(pos_host, 0, pos_size * 4 * sizeof(double));
 
     pos_dev = clCreateBuffer(context, CL_MEM_READ_ONLY,
-                             pos_size * 4 * sizeof(double), NULL, &ret);
+                             pos_size * sizeof(cl_double4), NULL, &ret);
     check_ret("clCreateBuffer Pos", ret);
     acc_dev = clCreateBuffer(context, CL_MEM_WRITE_ONLY,
-                             pos_size * 4 * sizeof(double), NULL, &ret);
+                             pos_size * sizeof(cl_double4), NULL, &ret);
     check_ret("clCreateBuffer Acc", ret);
 
     // Clear the host memory
     ret = clEnqueueWriteBuffer(command_queue, pos_dev, CL_TRUE, 0,
-                               pos_size * 4 * sizeof(double), 
+                               pos_size * sizeof(cl_double4), 
                                pos_host, 0, NULL, NULL);
     check_ret("clEnqueueWriteBuffer", ret);
 
@@ -89,13 +96,10 @@ void opencl_init(int N)
     N_store = N;
 
 #ifdef USE_SHARED
-    err = setSofteningSquared(EPSILON);
-    if (err > 0) { printf("setSofteningSquared err = %d\n", err); exit(0); }
-    printf("...GPU force SHARED opened. ");
+    printf("OpenCL force SHARED opened.\n");
 #else
-    printf("...GPU force opened. ");
+    printf("OpenCL force opened.\n");
 #endif
-    printf("blocksize = %d\n", blockSize);
 }
 
 void opencl_build(void)
@@ -112,7 +116,7 @@ void opencl_build(void)
 
         cl_int ret = clGetPlatformIDs(MAX_PLATFORMS, platform_id, &ret_num_platforms);
         check_ret("clGetPlatformIDs", ret);
-        printf("Num Platforms: %u\n\n", ret_num_platforms);
+        printf("Num Platforms: %u, ", ret_num_platforms);
 
         ret = -1;
 
@@ -147,7 +151,7 @@ void opencl_build(void)
         char* source_str;
         size_t source_size;
 
-        fp = fopen("force_kernel.cl", "r");
+        fp = fopen(FILE_NAME, "r");
         if (!fp)
         {
             fprintf(stderr, "Failed to load kernel.\n");
@@ -165,10 +169,18 @@ void opencl_build(void)
 
         // Build the program
         ret = clBuildProgram(program, 1, &device_id, NULL, NULL, NULL);
-        check_ret("clBuildProgram", ret);
+
+        if (ret != CL_SUCCESS)
+        {
+            char buffer[2048];
+            size_t length;
+            clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_LOG, sizeof(buffer), buffer, &length);
+            printf("Build log\n%s", buffer);
+            check_ret("clBuildProgram", ret);
+        }
 
         // Create the OpenCL kernel
-        kernel = clCreateKernel(program, "calculate_force", &ret);
+        kernel = clCreateKernel(program, KERNEL_NAME, &ret);
         check_ret("clCreateKernel", ret);
 
         free(source_str);
@@ -259,32 +271,47 @@ size_t ode_n_body_second_order_opencl(const real vec[], size_t N, real G, const 
         pos_host[4 * i + 3] = masses[i] * G;
     }
 
+    size_t global_work_size[2];
+    size_t local_work_size[2];
+
     ret = clEnqueueWriteBuffer(command_queue, pos_dev, CL_TRUE, 0,
                                n * 4 * sizeof(double), pos_host, 0, NULL, NULL);
     check_ret("clEnqueueWriteBuffer", ret);
 
-#ifdef USE_SHARED
-    gpuforce_shared<<<numBlocks, blockSize, sharedMemSize >>>(pos_dev, (int)N, acc_dev, numBlocks);
-#else   
     // Pass the parameters
     ret = clSetKernelArg(kernel, 0, sizeof(cl_mem), (void*)&pos_dev);
     check_ret("clSetKernelArg 0", ret);
     ret = clSetKernelArg(kernel, 1, sizeof(cl_mem), (void*)&acc_dev);
     check_ret("clSetKernelArg 1", ret);
-    ret = clSetKernelArg(kernel, 2, sizeof(int), (void*)&n);
+    ret = clSetKernelArg(kernel, 2, sizeof(cl_int), (void*)&pos_size);
     check_ret("clSetKernelArg 2", ret);
     ret = clSetKernelArg(kernel, 3, sizeof(double), (void*)&eps);
     check_ret("clSetKernelArg 3", ret);
 
+#ifdef USE_SHARED
+    ret = clSetKernelArg(kernel, 4, sharedMemSize, NULL);
+    check_ret("clSetKernelArg 4", ret);
+
+    // set work-item dimensions
+    local_work_size[0] = BLOCK_X;
+    local_work_size[1] = THREADS_PER_BODY;
+    global_work_size[0] = pos_size;
+    global_work_size[1] = THREADS_PER_BODY;
+
+    // execute the kernel:
+    ret = clEnqueueNDRangeKernel(command_queue, kernel, 2, NULL, 
+                                 global_work_size, local_work_size, 0, NULL, NULL);
+#else
     // Execute the OpenCL kernel on the list
-    size_t global_item_size = n;    // Process all n
-    size_t local_item_size = 1;     // each body separately
+    global_work_size[0] = n;
+    local_work_size[0] = 1;
     ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL,
-                                 &global_item_size, &local_item_size, 0, NULL, NULL);
+                                 global_work_size, local_work_size, 0, NULL, NULL);
+#endif
     check_ret("clEnqueueNDRangeKernel", ret);
 
     // Read the accelartion memory buffer on the device 
-    // This implicitly flushes the comman queue
+    // This implicitly flushes the command queue
     ret = clEnqueueReadBuffer(command_queue, acc_dev, CL_TRUE, 0,
                               n * 4 * sizeof(double), acc_host, 0, NULL, NULL);
     check_ret("clEnqueueReadBuffer", ret);
@@ -295,20 +322,6 @@ size_t ode_n_body_second_order_opencl(const real vec[], size_t N, real G, const 
         acc[3 * i + 1] = acc_host[4 * i + 1];
         acc[3 * i + 2] = acc_host[4 * i + 2];
     }
-
-#if 0
-    for (int i=0;i<min(n,5);++i)
-    {
-        printf("%i: acc.x: %f, acc.y: %f, acc.z: %f\n", i, acc_host[4 * i], acc_host[4 * i + 1], acc_host[4 * i + 2]);
-    }
-    for (int i = max(n-5,0); i < n; ++i)
-    {
-        printf("%i: acc.x: %f, acc.y: %f, acc.z: %f\n", i, acc_host[4 * i], acc_host[4 * i + 1], acc_host[4 * i + 2]);
-    }
-    exit(0);
-#endif
     return 0;
-#endif
 }
-
 #endif
