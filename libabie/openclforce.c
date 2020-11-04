@@ -1,6 +1,6 @@
 #ifdef OPENCL
 
-#define USE_SHARED
+#define USE_SHARED 1
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -29,13 +29,18 @@ static int pos_size = 0;
 
 #define EPSILON 1e-200;
 
-#ifdef USE_SHARED
+#if USE_SHARED
 static int numBlocks = 0;
 static int sharedMemSize = 0;
 #define BLOCK_X 32
-#define THREADS_PER_BODY 8
+#define THREADS_PER_BODY 1
 #define FILE_NAME "force_kernel_shared.cl"
+
+#if THREADS_PER_BODY == 1
+#define KERNEL_NAME "calculate_force_shared"
+#else
 #define KERNEL_NAME "calculate_force_shared_MT"
+#endif
 #else
 #define FILE_NAME "force_kernel.cl"
 #define KERNEL_NAME "calculate_force"
@@ -56,7 +61,7 @@ void opencl_init(int N)
     // Clean up anything used previously
     opencl_clear_buffers();
 
-#ifdef USE_SHARED
+#if USE_SHARED
     sharedMemSize = BLOCK_X * THREADS_PER_BODY * 4 * sizeof(cl_double4);
     numBlocks = ((int)N + BLOCK_X - 1) / BLOCK_X;
 
@@ -95,8 +100,8 @@ void opencl_init(int N)
     inited = true;
     N_store = N;
 
-#ifdef USE_SHARED
-    printf("OpenCL force SHARED opened.\n");
+#if USE_SHARED
+    printf("OpenCL force SHARED opened B=%u T=%u.\n", BLOCK_X, THREADS_PER_BODY);
 #else
     printf("OpenCL force opened.\n");
 #endif
@@ -285,10 +290,15 @@ size_t ode_n_body_second_order_opencl(const real vec[], size_t N, real G, const 
     check_ret("clSetKernelArg 1", ret);
     ret = clSetKernelArg(kernel, 2, sizeof(cl_int), (void*)&pos_size);
     check_ret("clSetKernelArg 2", ret);
+#if USE_SHARED && (THREADS_PER_BODY == 1)
+    ret = clSetKernelArg(kernel, 3, sizeof(int), (void*)&numBlocks);
+    check_ret("clSetKernelArg 3", ret);
+#else
     ret = clSetKernelArg(kernel, 3, sizeof(double), (void*)&eps);
     check_ret("clSetKernelArg 3", ret);
+#endif
 
-#ifdef USE_SHARED
+#if USE_SHARED
     ret = clSetKernelArg(kernel, 4, sharedMemSize, NULL);
     check_ret("clSetKernelArg 4", ret);
 
@@ -298,8 +308,14 @@ size_t ode_n_body_second_order_opencl(const real vec[], size_t N, real G, const 
     global_work_size[0] = pos_size;
     global_work_size[1] = THREADS_PER_BODY;
 
+#if THREADS_PER_BODY == 1
+    int work_dim = 1;
+#else
+    int work_dim = 2;
+#endif
+
     // execute the kernel:
-    ret = clEnqueueNDRangeKernel(command_queue, kernel, 2, NULL, 
+    ret = clEnqueueNDRangeKernel(command_queue, kernel, work_dim, NULL,
                                  global_work_size, local_work_size, 0, NULL, NULL);
 #else
     // Execute the OpenCL kernel on the list
@@ -322,6 +338,23 @@ size_t ode_n_body_second_order_opencl(const real vec[], size_t N, real G, const 
         acc[3 * i + 1] = acc_host[4 * i + 1];
         acc[3 * i + 2] = acc_host[4 * i + 2];
     }
+
+#if DUMP_DATA
+    dump_data(n);
+#endif
     return 0;
+}
+void dump_data(int n)
+{
+    static int count = 0;
+
+    if (++count == 100)
+    {
+        for (int i=0;i<n;i++)
+        {
+            printf("i: %i, accx %e, accy %e accz %e\n", i, acc_host[4 * i], acc_host[4 * i + 1], acc_host[4 * i + 2]);
+        }
+        exit(0);
+    }
 }
 #endif

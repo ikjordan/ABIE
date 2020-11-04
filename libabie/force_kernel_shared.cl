@@ -10,6 +10,7 @@
  */
 
 #define LOOP_UNROLL 8
+#define EPS 1e-200
 
 // Macros to simplify shared memory addressing
 #define SX(i) sharedPos[i + mul24((int)get_local_size(0), (int)get_local_id(1))]
@@ -18,6 +19,81 @@
 #define SX_SUM(i,j) sharedPos[i + mul24((uint)get_local_size(0), (uint)j)]    // i + blockDimx * j
 
 double3 bodyBodyInteraction(double3 ai, double4 bi, double4 bj, double softeningSquared)
+{
+    double3 r;
+
+    // r_ij  [3 FLOPS]
+    r.xyz = bi.xyz - bj.xyz;
+
+    // distSqr = dot(r_ij, r_ij) + EPS^2  [6 FLOPS]
+    double distSqr = r.x * r.x + r.y * r.y + r.z * r.z;
+    distSqr += EPS;
+
+    // invDistCube =1/distSqr^(3/2)  [4 FLOPS (2 mul, 1 sqrt, 1 inv)]
+    double invDist = rsqrt(distSqr);
+    double invDistCube = invDist * invDist * invDist;
+
+    // s = m_j * invDistCube [1 FLOP]
+    double s = bj.w * invDistCube;
+
+    // a_i =  a_i + s * r_ij [6 FLOPS]
+    ai.xyz -= r.xyz * s;
+    //ai.x += 1.0;
+    //ai.y += 2.0;
+    //ai.z += 3.0;
+
+    return ai;
+}
+
+double3 computeBodyAccel(double4 bodyPos,
+                         __global double4* positions,
+                         int num_tiles,
+                         __local double4* sharedPos)
+{
+    double3 acc = { 0.0f, 0.0f, 0.0f };
+    unsigned int blockDimx = get_local_size(0);
+    unsigned int threadIdxx = get_local_id(0);
+
+    for (int tile = 0; tile < num_tiles; tile++)
+    {
+        sharedPos[threadIdxx] = positions[tile * blockDimx + threadIdxx];
+
+        barrier(CLK_LOCAL_MEM_FENCE);
+
+        for (unsigned int counter = 0; counter < blockDimx; counter++)
+        {
+            acc = bodyBodyInteraction(acc, bodyPos, sharedPos[counter], 1e-200);
+            acc = bodyBodyInteraction(acc, bodyPos, sharedPos[++counter], 1e-200);
+            acc = bodyBodyInteraction(acc, bodyPos, sharedPos[++counter], 1e-200);
+            acc = bodyBodyInteraction(acc, bodyPos, sharedPos[++counter], 1e-200);
+            acc = bodyBodyInteraction(acc, bodyPos, sharedPos[++counter], 1e-200);
+            acc = bodyBodyInteraction(acc, bodyPos, sharedPos[++counter], 1e-200);
+            acc = bodyBodyInteraction(acc, bodyPos, sharedPos[++counter], 1e-200);
+            acc = bodyBodyInteraction(acc, bodyPos, sharedPos[++counter], 1e-200);
+        }
+        barrier(CLK_LOCAL_MEM_FENCE);
+    }
+    return acc;
+}
+
+__kernel void calculate_force_shared(
+            __global double4* pos,
+            __global double3* accel, 
+            int numBodies,
+            int num_tiles,
+            __local double4* sharedPos)
+{
+    unsigned int blockDimx = get_local_size(0);
+    unsigned int blockIdxx = get_group_id(0);
+    unsigned int threadIdxx = get_local_id(0);
+
+    int i = blockDimx * blockIdxx + threadIdxx;
+
+    // Need to execute, even if i>=n as shared memory needs to be fully initialised
+    accel[i] = computeBodyAccel(pos[i], pos, num_tiles, sharedPos);
+}
+
+double3 bodyBodyInteraction_mt(double3 ai, double4 bi, double4 bj, double softeningSquared)
 {
     double3 r;
 
@@ -65,22 +141,22 @@ double3 gravitation(double4 myPos, double3 accel, double softeningSquared, __loc
     int blockDimx = get_local_size(0);
     for (unsigned int counter = 0; counter < blockDimx; ) 
     {
-        accel = bodyBodyInteraction(accel, SX(i++), myPos, softeningSquared); 
+        accel = bodyBodyInteraction_mt(accel, SX(i++), myPos, softeningSquared); 
 	counter++;
 #if LOOP_UNROLL > 1
-        accel = bodyBodyInteraction(accel, SX(i++), myPos, softeningSquared); 
+        accel = bodyBodyInteraction_mt(accel, SX(i++), myPos, softeningSquared); 
 	counter++;
 #endif
 #if LOOP_UNROLL > 2
-        accel = bodyBodyInteraction(accel, SX(i++), myPos, softeningSquared); 
-        accel = bodyBodyInteraction(accel, SX(i++), myPos, softeningSquared); 
+        accel = bodyBodyInteraction_mt(accel, SX(i++), myPos, softeningSquared); 
+        accel = bodyBodyInteraction_mt(accel, SX(i++), myPos, softeningSquared); 
 	counter += 2;
 #endif
 #if LOOP_UNROLL > 4
-        accel = bodyBodyInteraction(accel, SX(i++), myPos, softeningSquared); 
-        accel = bodyBodyInteraction(accel, SX(i++), myPos, softeningSquared); 
-        accel = bodyBodyInteraction(accel, SX(i++), myPos, softeningSquared); 
-        accel = bodyBodyInteraction(accel, SX(i++), myPos, softeningSquared); 
+        accel = bodyBodyInteraction_mt(accel, SX(i++), myPos, softeningSquared); 
+        accel = bodyBodyInteraction_mt(accel, SX(i++), myPos, softeningSquared); 
+        accel = bodyBodyInteraction_mt(accel, SX(i++), myPos, softeningSquared); 
+        accel = bodyBodyInteraction_mt(accel, SX(i++), myPos, softeningSquared); 
 	counter += 4;
 #endif
     }
@@ -116,8 +192,8 @@ double3 computeBodyAccel_MT(double4 bodyPos,
     {
         sharedPos[threadIdxx + blockDimx * threadIdxy] = 
             positions[WRAP(blockIdxx + mul24(blockDimy, tile) + threadIdxy, gridDimx) * blockDimx
-                      + threadIdxx];
-       
+                     + threadIdxx];
+
         // __syncthreads();
         barrier(CLK_LOCAL_MEM_FENCE);
 
