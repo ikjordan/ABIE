@@ -33,7 +33,7 @@ static int pos_size = 0;
 static int numBlocks = 0;
 static int sharedMemSize = 0;
 #define BLOCK_X 32
-#define THREADS_PER_BODY 8
+#define THREADS_PER_BODY 1
 #define FILE_NAME "force_kernel_shared.cl"
 
 #if THREADS_PER_BODY == 1
@@ -308,17 +308,10 @@ size_t ode_n_body_second_order_opencl(const real vec[], size_t N, real G, const 
     global_work_size[0] = pos_size;
     global_work_size[1] = THREADS_PER_BODY;
 
-#if THREADS_PER_BODY == 1
-    int work_dim = 1;
-#else
-    int work_dim = 2;
-#endif
-
-    // execute the kernel:
-    ret = clEnqueueNDRangeKernel(command_queue, kernel, work_dim, NULL,
+    // execute the kernel using shared memory:
+    ret = clEnqueueNDRangeKernel(command_queue, kernel, 2, NULL,
                                  global_work_size, local_work_size, 0, NULL, NULL);
 #else
-    // Execute the OpenCL kernel on the list
     global_work_size[0] = n;
     local_work_size[0] = 1;
     ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL,
