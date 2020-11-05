@@ -33,7 +33,7 @@ static int pos_size = 0;
 static int numBlocks = 0;
 static int sharedMemSize = 0;
 #define BLOCK_X 32
-#define THREADS_PER_BODY 1
+#define THREADS_PER_BODY 8
 #define FILE_NAME "force_kernel_shared.cl"
 
 #if THREADS_PER_BODY == 1
@@ -49,6 +49,11 @@ static int sharedMemSize = 0;
 void opencl_build(void);
 void opencl_clear_buffers(void);
 void check_ret(char* text, cl_int ret);
+
+//#define DUMP_DATA
+#ifdef DUMP_DATA
+void dump_data(int n);
+#endif
 
 void opencl_init(int N) 
 {
@@ -290,13 +295,8 @@ size_t ode_n_body_second_order_opencl(const real vec[], size_t N, real G, const 
     check_ret("clSetKernelArg 1", ret);
     ret = clSetKernelArg(kernel, 2, sizeof(cl_int), (void*)&pos_size);
     check_ret("clSetKernelArg 2", ret);
-#if USE_SHARED && (THREADS_PER_BODY == 1)
-    ret = clSetKernelArg(kernel, 3, sizeof(int), (void*)&numBlocks);
-    check_ret("clSetKernelArg 3", ret);
-#else
     ret = clSetKernelArg(kernel, 3, sizeof(double), (void*)&eps);
     check_ret("clSetKernelArg 3", ret);
-#endif
 
 #if USE_SHARED
     ret = clSetKernelArg(kernel, 4, sharedMemSize, NULL);
@@ -339,16 +339,18 @@ size_t ode_n_body_second_order_opencl(const real vec[], size_t N, real G, const 
         acc[3 * i + 2] = acc_host[4 * i + 2];
     }
 
-#if DUMP_DATA
+#ifdef DUMP_DATA
     dump_data(n);
 #endif
     return 0;
 }
+
+#ifdef DUMP_DATA
 void dump_data(int n)
 {
     static int count = 0;
 
-    if (++count == 100)
+    if (++count == 1)
     {
         for (int i=0;i<n;i++)
         {
@@ -357,4 +359,6 @@ void dump_data(int n)
         exit(0);
     }
 }
+#endif
+
 #endif
