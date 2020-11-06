@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define CL_USE_DEPRECATED_OPENCL_2_0_APIS
 #include <CL/cl_ext.h>
 #include "common.h"
 
@@ -33,7 +34,7 @@ static int pos_size = 0;
 static int numBlocks = 0;
 static int sharedMemSize = 0;
 #define BLOCK_X 32
-#define THREADS_PER_BODY 1
+#define THREADS_PER_BODY 8
 #define FILE_NAME "force_kernel_shared.cl"
 
 #if THREADS_PER_BODY == 1
