@@ -1,6 +1,6 @@
 #ifdef OPENCL
 
-#define USE_SHARED 1
+
 #define LOAD_FROM_STRING
 
 #include <stdbool.h>
@@ -46,7 +46,7 @@ static int pos_size = 0;
 #define VAR_LENGTH xcomb(VAR_NAME,LEN_EXT)
 #define FILE_NAME xstr(VAR_NAME) FILE_EXT
 
-#if USE_SHARED
+#ifdef USE_SHARED
 static int numBlocks = 0;
 static int sharedMemSize = 0;
 #define BLOCK_X 32
@@ -81,7 +81,7 @@ void opencl_init(int N)
     // Clean up anything used previously
     opencl_clear_buffers();
 
-#if USE_SHARED
+#ifdef USE_SHARED
     sharedMemSize = BLOCK_X * THREADS_PER_BODY * 4 * sizeof(cl_double4);
     numBlocks = ((int)N + BLOCK_X - 1) / BLOCK_X;
 
@@ -120,7 +120,7 @@ void opencl_init(int N)
     inited = true;
     N_store = N;
 
-#if USE_SHARED
+#ifdef USE_SHARED
     printf("OpenCL force SHARED opened B=%u T=%u.\n", BLOCK_X, THREADS_PER_BODY);
 #else
     printf("OpenCL force opened.\n");
@@ -313,7 +313,7 @@ size_t ode_n_body_second_order_opencl(const real vec[], size_t N, real G, const 
     check_ret("clSetKernelArg 0", ret);
     ret = clSetKernelArg(kernel, 1, sizeof(cl_mem), (void*)&acc_dev);
     check_ret("clSetKernelArg 1", ret);
-#if USE_SHARED
+#ifdef USE_SHARED
     ret = clSetKernelArg(kernel, 2, sharedMemSize, NULL);
     check_ret("clSetKernelArg 4", ret);
 #else
@@ -323,7 +323,7 @@ size_t ode_n_body_second_order_opencl(const real vec[], size_t N, real G, const 
     ret = clSetKernelArg(kernel, 3, sizeof(double), (void*)&eps);
     check_ret("clSetKernelArg 3", ret);
 
-#if USE_SHARED
+#ifdef USE_SHARED
     // set work-item dimensions
     local_work_size[0] = BLOCK_X;
     local_work_size[1] = THREADS_PER_BODY;

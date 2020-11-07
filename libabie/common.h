@@ -1,6 +1,8 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#define USE_SHARED
+
 #include <stdio.h>
 #include <stdlib.h>
 #ifdef WIN32

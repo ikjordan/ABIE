@@ -170,7 +170,7 @@
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(CudaToolkitLibDir);$(NVCUDASAMPLES_ROOT)/common/lib/$(PlatformName)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy.exe "$(OutDir)$(TargetName)$(TargetExt)" "$(SolutionDir)ABIE\libabie$(TargetExt)" /Y</Command>
+      <Command>xcopy.exe "$(OutDir)$(TargetName)$(TargetExt)" "$(SolutionDir)ABIE\libabie$(TargetExt)*" /Y</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copy to the python source directory</Message>
@@ -198,7 +198,7 @@
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(CudaToolkitLibDir);$(NVCUDASAMPLES_ROOT)/common/lib/$(PlatformName)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy.exe "$(OutDir)$(TargetName)$(TargetExt)" "$(SolutionDir)ABIE\libabie$(TargetExt)" /Y</Command>
+      <Command>xcopy.exe "$(OutDir)$(TargetName)$(TargetExt)" "$(SolutionDir)ABIE\libabie$(TargetExt)*" /Y</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copy to the python source directory</Message>
@@ -231,7 +231,7 @@
       <AdditionalDependencies>%(AdditionalDependencies);cudart.lib;cudadevrt.lib;libomp.lib</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy.exe "$(OutDir)$(TargetName)$(TargetExt)" "$(SolutionDir)ABIE\libabie$(TargetExt)" /Y</Command>
+      <Command>xcopy.exe "$(OutDir)$(TargetName)$(TargetExt)" "$(SolutionDir)ABIE\libabie$(TargetExt)*" /Y</Command>
       <Message>Copy to the python source directory</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -261,7 +261,7 @@
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(CudaToolkitLibDir);$(NVCUDASAMPLES_ROOT)/common/lib/$(PlatformName)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy.exe "$(OutDir)$(TargetName)$(TargetExt)" "$(SolutionDir)ABIE\libabie$(TargetExt)" /Y</Command>
+      <Command>xcopy.exe "$(OutDir)$(TargetName)$(TargetExt)" "$(SolutionDir)ABIE\libabie$(TargetExt)*" /Y</Command>
       <Message>Copy to the python source directory</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -285,7 +285,7 @@
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy.exe "$(OutDir)$(TargetName)$(TargetExt)" "$(SolutionDir)ABIE\libabie$(TargetExt)" /Y</Command>
+      <Command>xcopy.exe "$(OutDir)$(TargetName)$(TargetExt)" "$(SolutionDir)ABIE\libabie$(TargetExt)*" /Y</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copy to the python source directory</Message>
@@ -317,7 +317,7 @@
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(CudaToolkitLibDir);$(NVCUDASAMPLES_ROOT)/common/lib/$(PlatformName);</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy.exe "$(OutDir)$(TargetName)$(TargetExt)" "$(SolutionDir)ABIE\libabie$(TargetExt)" /Y</Command>
+      <Command>xcopy.exe "$(OutDir)$(TargetName)$(TargetExt)" "$(SolutionDir)ABIE\libabie$(TargetExt)*" /Y</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copy to the python source directory</Message>
@@ -357,7 +357,7 @@
       <AdditionalDependencies>%(AdditionalDependencies);cudart.lib;cudadevrt.lib;libomp.lib</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy.exe "$(OutDir)$(TargetName)$(TargetExt)" "$(SolutionDir)ABIE\libabie$(TargetExt)" /Y</Command>
+      <Command>xcopy.exe "$(OutDir)$(TargetName)$(TargetExt)" "$(SolutionDir)ABIE\libabie$(TargetExt)*" /Y</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copy to the python source directory</Message>
@@ -395,7 +395,7 @@
       <AdditionalDependencies>%(AdditionalDependencies);cudart.lib;cudadevrt.lib;libomp.lib</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy.exe "$(OutDir)$(TargetName)$(TargetExt)" "$(SolutionDir)ABIE\libabie$(TargetExt)" /Y</Command>
+      <Command>xcopy.exe "$(OutDir)$(TargetName)$(TargetExt)" "$(SolutionDir)ABIE\libabie$(TargetExt)*" /Y</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copy to the python source directory</Message>

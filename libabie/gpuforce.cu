@@ -1,7 +1,5 @@
 #ifdef GPU
 
-#define USE_SHARED
-
 extern "C" {
 #include <math.h>
 #include <cuda.h>
