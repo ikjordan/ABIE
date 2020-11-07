@@ -48,8 +48,6 @@ class CLibABIE(object):
                         print("Need to build libabie.dll manually")
                         sys.exit(0)
 
-            # On Windows update path, for case where openmp.dll is not on path, but is in
-            # the same directory as libabie.dll
             if platform.system() == 'Windows':
                 # Another hack - look for the first part of path that has CUDA and bin, and add that to the 
                 # DLL path. 
@@ -64,6 +62,10 @@ class CLibABIE(object):
 
                 # We don't try this trick for OpenMP, as MSVC does not add to path, so need to 
                 # copy libopenmp.dll to the same directory as libabie.dll
+
+                # Update path, for case where openmp.dll is in the same directory as libabie.dll
+                # Needed for python pre 3.8
+                os.environ['PATH'] += ";" + os.path.dirname(lib_path)
 
             # Finally in a position to load the C library - will throw exception if fails
             self.lib = ctypes.cdll.LoadLibrary(lib_path)
