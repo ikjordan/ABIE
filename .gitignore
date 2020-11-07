@@ -516,3 +516,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Stringified kernel files
+kernel_string.h

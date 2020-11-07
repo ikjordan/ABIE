@@ -109,6 +109,12 @@
     <PostBuildEvent>
       <Message>Copy to the python source directory</Message>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>python ..\source2string.py -i ..\libabie\force_kernel.cl ..\libabie\kernel_string.h</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Stringify Kernel</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -140,6 +146,12 @@
       <Command>echo F|xcopy.exe "$(OutDir)$(TargetName)$(TargetExt)" "$(SolutionDir)ABIE\libabie$(TargetExt)" /Y</Command>
       <Message>Copy to the python source directory</Message>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>python ..\source2string.py -i ..\libabie\force_kernel.cl ..\libabie\kernel_string.h</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Stringify Kernel</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -167,6 +179,12 @@
     <PostBuildEvent>
       <Message>Copy to the python source directory</Message>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>python ..\source2string.py -i ..\libabie\force_kernel.cl ..\libabie\kernel_string.h</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Stringify Kernel</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -199,6 +217,12 @@
     <PostBuildEvent>
       <Message>Copy to the python source directory</Message>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>python ..\source2string.py -i ..\libabie\force_kernel.cl ..\libabie\kernel_string.h</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Stringify Kernel</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="common.h" />
@@ -218,7 +242,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="force_kernel.cl" />
-    <None Include="force_kernel_shared.cl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

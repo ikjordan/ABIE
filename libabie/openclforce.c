@@ -1,12 +1,18 @@
 #ifdef OPENCL
 
 #define USE_SHARED 1
+#define LOAD_FROM_STRING
 
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef LOAD_FROM_STRING
+#include "kernel_string.h"
+#endif
+
+#define CL_USE_DEPRECATED_OPENCL_1_2_APIS
 #define CL_USE_DEPRECATED_OPENCL_2_0_APIS
 #include <CL/cl_ext.h>
 #include "common.h"
@@ -28,14 +34,23 @@ static bool built = false;
 static int N_store = 0;
 static int pos_size = 0;
 
+#define xstr(s) str(s)
+#define str(s) #s
+#define xcomb(a,b) comb(a,b)
+#define comb(a,b) a##b
+
 #define EPSILON 1e-200;
+#define VAR_NAME force_kernel
+#define FILE_EXT ".cl"
+#define LEN_EXT _len
+#define VAR_LENGTH xcomb(VAR_NAME,LEN_EXT)
+#define FILE_NAME xstr(VAR_NAME) FILE_EXT
 
 #if USE_SHARED
 static int numBlocks = 0;
 static int sharedMemSize = 0;
 #define BLOCK_X 32
 #define THREADS_PER_BODY 8
-#define FILE_NAME "force_kernel_shared.cl"
 
 #if THREADS_PER_BODY == 1
 #define KERNEL_NAME "calculate_force_shared"
@@ -43,7 +58,6 @@ static int sharedMemSize = 0;
 #define KERNEL_NAME "calculate_force_shared_MT"
 #endif
 #else
-#define FILE_NAME "force_kernel.cl"
 #define KERNEL_NAME "calculate_force"
 #endif
 
@@ -158,21 +172,24 @@ void opencl_build(void)
         check_ret("clCreateCommandQueue", ret);
 
         // Load the kernel source code into the array source_str
-        FILE* fp;
         char* source_str;
         size_t source_size;
 
-        fp = fopen(FILE_NAME, "r");
+#ifdef LOAD_FROM_STRING
+        source_str = VAR_NAME;
+        source_size = VAR_LENGTH;
+#else
+        FILE* fp = fopen(FILE_NAME, "r");
         if (!fp)
         {
-            fprintf(stderr, "Failed to load kernel.\n");
+            fprintf(stderr, "Failed to load kernel. %s\n", FILE_NAME);
             exit(0);
         }
 
         source_str = (char*)malloc(MAX_SOURCE_SIZE);
         source_size = fread(source_str, 1, MAX_SOURCE_SIZE, fp);
         fclose(fp);
-
+#endif
         // Create a program from the kernel source
         program = clCreateProgramWithSource(context, 1, (const char**)&source_str,
                                             (const size_t*)&source_size, &ret);
@@ -194,7 +211,9 @@ void opencl_build(void)
         kernel = clCreateKernel(program, KERNEL_NAME, &ret);
         check_ret("clCreateKernel", ret);
 
+#ifndef LOAD_FROM_STRING
         free(source_str);
+#endif
     }
 }
 
@@ -294,30 +313,32 @@ size_t ode_n_body_second_order_opencl(const real vec[], size_t N, real G, const 
     check_ret("clSetKernelArg 0", ret);
     ret = clSetKernelArg(kernel, 1, sizeof(cl_mem), (void*)&acc_dev);
     check_ret("clSetKernelArg 1", ret);
-    ret = clSetKernelArg(kernel, 2, sizeof(cl_int), (void*)&pos_size);
+#if USE_SHARED
+    ret = clSetKernelArg(kernel, 2, sharedMemSize, NULL);
+    check_ret("clSetKernelArg 4", ret);
+#else
+    ret = clSetKernelArg(kernel, 2, sizeof(cl_int), (void*)&n);
     check_ret("clSetKernelArg 2", ret);
+#endif
     ret = clSetKernelArg(kernel, 3, sizeof(double), (void*)&eps);
     check_ret("clSetKernelArg 3", ret);
 
 #if USE_SHARED
-    ret = clSetKernelArg(kernel, 4, sharedMemSize, NULL);
-    check_ret("clSetKernelArg 4", ret);
-
     // set work-item dimensions
     local_work_size[0] = BLOCK_X;
     local_work_size[1] = THREADS_PER_BODY;
     global_work_size[0] = pos_size;
     global_work_size[1] = THREADS_PER_BODY;
+#else
+    local_work_size[0] = 1;
+    local_work_size[1] = 1;
+    global_work_size[0] = n;
+    global_work_size[1] = 1;
+#endif
 
     // execute the kernel using shared memory:
     ret = clEnqueueNDRangeKernel(command_queue, kernel, 2, NULL,
                                  global_work_size, local_work_size, 0, NULL, NULL);
-#else
-    global_work_size[0] = n;
-    local_work_size[0] = 1;
-    ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL,
-                                 global_work_size, local_work_size, 0, NULL, NULL);
-#endif
     check_ret("clEnqueueNDRangeKernel", ret);
 
     // Read the accelartion memory buffer on the device 

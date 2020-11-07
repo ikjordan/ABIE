@@ -34,7 +34,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="force_kernel_shared.cl" />
     <None Include="force_kernel.cl" />
   </ItemGroup>
 </Project>
