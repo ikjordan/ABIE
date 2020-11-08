@@ -10,7 +10,7 @@ on the official code repository for the book. The following changes have been ma
 3. Add support for MS Windows, using Microsoft Visual Studio Community 2019 
 (free to non-commercial users) *done*
 4. Support MS Windows builds using gcc under msys2 (minGW 64 bit) *done*
-5. Add extra example files *several added* see [Examples](##Examples)
+5. Add extra example files *several added* see [Examples](#Examples)
 6. Get the CUDA code working under Windows *Done*
 7. Fix the use of local memory (tiling) in CUDA *Done*
 8. Implement OpenCL acceleration *Done for AMD, Intel and NVidia under Windows and Linux*
@@ -25,7 +25,8 @@ all integrators should now work in both `ctypes` (where implemented) and `numpy`
 2. Issues surrounding division that broke execution when using Python 3 have been corrected
 3. Some C arrays were declared on the stack. This caused stack overflows with large particle simulations. 
 Heap memory is now used instead
-4. Addressed issues with timestep and energy delta calculations in the `Wisdom Holman` integrator
+4. Addressed issues with timestep and energy delta calculations in the `Wisdom Holman` integrator. 
+Accelerated the calculation of energy delta by adding a C function called via `ctypes`. This function is also used when displaying energy delta graphs created from `.h5` files
 5. The package configuration has been modified, so that code can be called in the same way, regardless
 of whether the `astroabie` package has been installed. Examples have been moved into a separate
 directory
@@ -38,13 +39,12 @@ access to the debugger for both the Python and C code
 being loaded on a system where CUDA is not installed. Therefore two solutions are provided `ABIE` and
 `ABIE_CUDA`. CUDA is enabled in `ABIE_CUDA` when the `GPU` preprocessor directive is added
 10. The CUDA version that uses shared local memory, which was removed from the original repository, has been fixed, and is now the default. The global memory version from the repository can be re-enabled via a compile flag. Note that the CUDA implementation has only been tested under Windows
-11. A third MSVC solution supports OpenCL (`ABIE_OpenCL`). The OpenCL version uses shared local memory, and executes in similar speed to the shared memory CUDA implementation on my PC. It has also been tested on Intel and AMD processors, and under Linux. For reference, an OpenCL global memory version is also provided and can be enabled via a compile flag
+11. A third MSVC solution supports OpenCL (`ABIE_OpenCL`). The OpenCL version uses shared local memory, and executes in similar speed to the shared memory CUDA implementation on my PC. It has also been tested on Intel and AMD processors, and under Linux. For reference, an OpenCL global memory version is also provided and can be enabled via a compile flag. OpenCL is enabled when the `OPENCL` preprocessor directive is added
 12. ABIE uses C Variable Length Arrays (VLA), which are not supported by the MSVC compiler (MSVC is not
 completely C99 compliant). Therefore the LLVM (`clang-cl`) tool chain is used with Visual Studio 2019
 13. The `clang-cl` compiler does support OpenMP, but the required DLL is not installed automatically. `libomp.dll`
 can be found in the LLVM section of the MSVC 2019 installation. Either copy it to the DLL directory for your system,
-or paste a copy into the same directory as `libabie.dll`. OpenMP is enabled when the `OPENMP` preprocessor 
-directive is added
+or paste a copy into the same directory as `libabie.dll`. OpenMP is enabled when the `OPENMP` preprocessor directive is added
 14. OpenMP is enabled by default in the libabie `Makefile`
 15. The MSVC solutions are configured so that the compiler generates AVX instructions. On older processors that do not
 support AVX, this can result in `error 0xc000001d` at startup. If this occurs modify the MSVC solution so that AVX instructions are not generated 
