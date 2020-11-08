@@ -3,6 +3,9 @@
 // If this is not the case, then dummy particles of 0 mass have to be added 
 // before calling the shared kernels
 
+// Needed to compile under pocl
+#pragma OPENCL EXTENSION cl_khr_fp64 : enable
+
 double3 bodyBodyInteraction(double3 ai, 
                             double4 bi, 
                             double4 bj, 

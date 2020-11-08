@@ -1,19 +1,18 @@
 #ifdef OPENCL
 
-
-#define LOAD_FROM_STRING
-
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef LOAD_FROM_STRING
+#ifdef LOAD_KERNEL_FROM_STRING
 #include "kernel_string.h"
 #endif
 
+#define CL_TARGET_OPENCL_VERSION 120
 #define CL_USE_DEPRECATED_OPENCL_1_2_APIS
 #define CL_USE_DEPRECATED_OPENCL_2_0_APIS
+
 #include <CL/cl_ext.h>
 #include "common.h"
 
@@ -175,7 +174,7 @@ void opencl_build(void)
         char* source_str;
         size_t source_size;
 
-#ifdef LOAD_FROM_STRING
+#ifdef LOAD_KERNEL_FROM_STRING
         source_str = VAR_NAME;
         source_size = VAR_LENGTH;
 #else
@@ -200,10 +199,17 @@ void opencl_build(void)
 
         if (ret != CL_SUCCESS)
         {
-            char buffer[2048];
+            // Get the size of buffer required for build log
             size_t length;
-            clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_LOG, sizeof(buffer), buffer, &length);
-            printf("Build log\n%s", buffer);
+            clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_LOG, 0, NULL, &length);
+
+            // Create buffer and extract build log
+            char* buffer = malloc(length * sizeof(char));
+            clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_LOG, length * sizeof(char), buffer, NULL);
+            printf("Build log:\n%s", buffer);
+            free(buffer);
+
+            // Terminate
             check_ret("clBuildProgram", ret);
         }
 
@@ -211,7 +217,7 @@ void opencl_build(void)
         kernel = clCreateKernel(program, KERNEL_NAME, &ret);
         check_ret("clCreateKernel", ret);
 
-#ifndef LOAD_FROM_STRING
+#ifndef LOAD_KERNEL_FROM_STRING
         free(source_str);
 #endif
     }
