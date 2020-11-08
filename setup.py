@@ -15,10 +15,11 @@ if sys.platform == 'darwin':
     from distutils import sysconfig
     vars = sysconfig.get_config_vars()
     vars['LDSHARED'] = vars['LDSHARED'].replace('-bundle', '-shared')
-    extra_link_args=['-Wl,-fcommon,-install_name,@rpath/libabie'+suffix]
+    extra_link_args=['-Wl,-fcommon, -fopenmp, -install_name,@rpath/libabie'+suffix]
 else:
-    extra_link_args=[]
+    extra_link_args=['-fopenmp']
 
+# Build with OpenMP support
 if platform.system() != 'Windows':
     module_abie = Extension('libabie',
                             sources = ['libabie/integrator_gauss_radau15.c',
@@ -27,7 +28,7 @@ if platform.system() != 'Windows':
                                 'libabie/common.c',
                                 'libabie/additional_forces.c'],
                             include_dirs = ['libabie'],
-                            extra_compile_args=['-fstrict-aliasing', '-O3','-std=c99','-march=native','-fPIC', '-shared', '-fcommon'],
+                            extra_compile_args=['-fstrict-aliasing', '-O3','-std=c99','-march=native','-fPIC', '-shared', '-fcommon', '-fopenmp', '-DOPENMP'],
                             extra_link_args=extra_link_args,
                             )
 

@@ -3,17 +3,19 @@ I have been writing toy n-body simulations for many years.
 I found reading *Moving Planets Around* to be a great way to increase my knowledge of the topic.  
 
 This fork aims to build 
-on the official code repository for the book. It is work in progress, but the intent is to:
+on the official code repository for the book. The following changes have been made:
 
 1. Address issues in some of the integrators that prevented them running. *done*
 2. Address some issues I found with Python package management *done*
 3. Add support for MS Windows, using Microsoft Visual Studio Community 2019 
 (free to non-commercial users) *done*
 4. Support MS Windows builds using gcc under msys2 (minGW 64 bit) *done*
-5. Add extra example files *in progress*
+5. Add extra example files *several added* see [Examples](##Examples)
 6. Get the CUDA code working under Windows *Done*
-7. Give option of using OpenMP on multi-core targets *Done for Windows*
-7. Make changes to `snapshot_serialization.py` to support windows, and allow it to be called 
+7. Fix the use of local memory (tiling) in CUDA *Done*
+8. Implement OpenCL acceleration *Done for AMD, Intel and NVidia under Windows and Linux*
+9. Give option of using OpenMP on multi-core targets *Done for Windows and Linux*
+10. Make changes to `snapshot_serialization.py` to support windows, and allow it to be called 
 from Python programatically *done*
 
 ## Notes
@@ -35,31 +37,40 @@ access to the debugger for both the Python and C code
 9. A CUDA MSVC 2019 solution is also provided. Adding a CUDA aware build option to MSVC precludes that solution
 being loaded on a system where CUDA is not installed. Therefore two solutions are provided `ABIE` and
 `ABIE_CUDA`. CUDA is enabled in `ABIE_CUDA` when the `GPU` preprocessor directive is added
-10. ABIE uses C Variable Length Arrays (VLA), which are not supported by the MSVC compiler (MSVC is not
+10. The CUDA version that uses shared local memory, which was removed from the original repository, has been fixed, and is now the default. The global memory version from the repository can be re-enabled via a compile flag. Note that the CUDA implementation has only been tested under Windows
+11. A third MSVC solution supports OpenCL (`ABIE_OpenCL`). The OpenCL version uses shared local memory, and executes in similar speed to the shared memory CUDA implementation on my PC. It has also been tested on Intel and AMD processors, and under Linux. For reference, an OpenCL global memory version is also provided and can be enabled via a compile flag
+12. ABIE uses C Variable Length Arrays (VLA), which are not supported by the MSVC compiler (MSVC is not
 completely C99 compliant). Therefore the LLVM (`clang-cl`) tool chain is used with Visual Studio 2019
-11. The `clang-cl` compiler does support OpenMP, but the required DLL is not installed automatically. `libomp.dll`
+13. The `clang-cl` compiler does support OpenMP, but the required DLL is not installed automatically. `libomp.dll`
 can be found in the LLVM section of the MSVC 2019 installation. Either copy it to the DLL directory for your system,
 or paste a copy into the same directory as `libabie.dll`. OpenMP is enabled when the `OPENMP` preprocessor 
 directive is added
-12. The solutions are configured so that the compiler generates AVX instructions 
-13. The code has been tested under MS Windows 10, MinGW 64-bit running on Windows 10, Ubuntu 20.04 running
-in a VirtualBox VM and a 4GB Raspberry PI 4 running Raspberry Pi OS
-14. I do not have acccess to an Apple Mac, so I may have inadvertantly broken support for that platform
-15. To make intellisense work correctly for C99 code with `Clang` an additional option of `-std=c99` is set. 
+14. OpenMP is enabled by default in the libabie `Makefile`
+15. The MSVC solutions are configured so that the compiler generates AVX instructions. On older processors that do not
+support AVX, this can result in `error 0xc000001d` at startup. If this occurs modify the MSVC solution so that AVX instructions are not generated 
+16. The code has been tested under MS Windows 10, MinGW 64-bit running on Windows 10, Ubuntu 20.04 running
+in a VirtualBox VM and native, and a 4GB Raspberry PI 4 running Raspberry Pi OS
+17. I do not have acccess to an Apple Mac, so I may have inadvertantly broken support for that platform
+18. To make intellisense work correctly for C99 code with `Clang` an additional option of `-std=c99` is set. 
 This is valid in `Clang`, and triggers intellisense to work correctly, but is ignored in `Clang-cl`, and so
 causes a warning to be generated
-16. Clang supports 80 bit `long double`, but in Clang-cl `long double` is set to 64 bits for 
+19. Clang supports 80 bit `long double`, but in Clang-cl `long double` is set to 64 bits for 
 compatibility with MSVC. Use MinGW64 to build a DLL that will provide 80 bit `long double` support under Windows
-17. The C files in the project are built into a DLL. I failed to configure `setup.py` to automatically 
+20. The C files in the project are built into a DLL. I failed to configure `setup.py` to automatically 
 trigger a build using `Clang`, so before running `setup.py` `libabie.dll` should be built in Visual Studio.
 The DLL will then be packaged correctly
-18. Under MinGW 64bit the DLL (`libabie.dll`) can be built by invoking `make`. This should be done before 
+21. Under MinGW 64bit the DLL (`libabie.dll`) can be built by invoking `make`. This should be done before 
 running `setup.py`. The DLL will then be packaged correctly
-19. Note that there appears to be an issue in on the Raspberry Pi, where specifying dependencies can cause 
+22. Note that there appears to be an issue in on the Raspberry Pi, where specifying dependencies can cause 
 `Cython` to fail. The workaround is to comment the dependencies out from `setup.py` and install them
 manually
-20. The `particles` class has been extended to give an option to position the COM of the system at the origin 
+23. The `particles` class has been extended to give an option to position the COM of the system at the origin 
 with zero velocity
+24. If, after installing astroabie using:  
+`python setup.py install`  
+you want to remove it, then use the following:  
+`pip uninstall astroabie`  
+To trigger a full rebuild of `libabie` when using `setup.py`, the `build` directory must also be purged
 
 ### MinGW 64bit - h5py issue
 Currently (September 2020) there is a known issue with h5py under msys2 minGW64. 
@@ -135,7 +146,7 @@ Based on the example in chapter 10.
 A simulation comprising the Sun, Neptune and a large number of small Kuiper belt like objects. The simulation shows some
 of the the objects falling into resonance with Neptune. See e.g. https://en.wikipedia.org/wiki/Resonant_trans-Neptunian_object
 
-Illustrates the use of CUDA and OpenMP in more demanding simulations.
+Illustrates the use of CUDA, OpenCL and OpenMP in more demanding simulations. Switch from Wisom-Holman to Gauss-Radau 15 to enable CUDA or OpenCL
 
 #### `display.py`
 Helper class to display multiple graphs using `matplotlib`  

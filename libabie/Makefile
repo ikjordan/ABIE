@@ -21,7 +21,7 @@ OPENCL_SDK_PATH=/opt/opencl
 # path to Python interpreter
 PYTHON = python3
 
-CFLAGS += -fPIC -O3 -std=c99 -g -fcommon -fstrict-aliasing -shared
+CFLAGS += -fPIC -O3 -march=native -std=c99 -g -fcommon -fstrict-aliasing -shared
 
 OBJS = common.o integrator_runge_kutta.o integrator_gauss_radau15.o integrator_wisdom_holman.o additional_forces.o
 

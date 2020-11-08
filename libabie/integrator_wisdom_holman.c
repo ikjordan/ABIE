@@ -423,15 +423,13 @@ void compute_accel(real *pos, real *jacobi_pos, real *masses, size_t nbodies, re
                 diff[0] = pos[3 * j] - pos[3 * i];
                 diff[1] = pos[3 * j + 1] - pos[3 * i + 1];
                 diff[2] = pos[3 * j + 2] - pos[3 * i + 2];
-                real aux = 1.0 / pow(vector_norm(diff, 3), 3.0);
-
-                accel3[3 * j] -= G * masses[i] * aux * diff[0];
-                accel3[3 * j + 1] -= G * masses[i] * aux * diff[1];
-                accel3[3 * j + 2] -= G * masses[i] * aux * diff[2];
-
-                accel3[3 * i] += G * masses[j] * aux * diff[0];
-                accel3[3 * i + 1] += G * masses[j] * aux * diff[1];
-                accel3[3 * i + 2] += G * masses[j] * aux * diff[2];
+                real aux = G / pow(vector_norm(diff, 3), 3.0);
+                accel3[3 * j] -= masses[i] * aux * diff[0];
+                accel3[3 * j + 1] -= masses[i] * aux * diff[1];
+                accel3[3 * j + 2] -= masses[i] * aux * diff[2];
+                accel3[3 * i] += masses[j] * aux * diff[0];
+                accel3[3 * i + 1] += masses[j] * aux * diff[1];
+                accel3[3 * i + 2] += masses[j] * aux * diff[2];
             }
         }
     }
@@ -446,13 +444,13 @@ void compute_accel(real *pos, real *jacobi_pos, real *masses, size_t nbodies, re
                 diff[0] = pos[3 * j] - pos[3 * i];
                 diff[1] = pos[3 * j + 1] - pos[3 * i + 1];
                 diff[2] = pos[3 * j + 2] - pos[3 * i + 2];
-                aux = 1.0 / pow(vector_norm(diff, 3), 3.0);
-                accel3[3 * j] -= G * masses[i] * aux * diff[0];
-                accel3[3 * j + 1] -= G * masses[i] * aux * diff[1];
-                accel3[3 * j + 2] -= G * masses[i] * aux * diff[2];
-                accel3[3 * i] += G * masses[j] * aux * diff[0];
-                accel3[3 * i + 1] += G * masses[j] * aux * diff[1];
-                accel3[3 * i + 2] += G * masses[j] * aux * diff[2];
+                aux = G / pow(vector_norm(diff, 3), 3.0);
+                accel3[3 * j] -= masses[i] * aux * diff[0];
+                accel3[3 * j + 1] -= masses[i] * aux * diff[1];
+                accel3[3 * j + 2] -= masses[i] * aux * diff[2];
+                accel3[3 * i] += masses[j] * aux * diff[0];
+                accel3[3 * i + 1] += masses[j] * aux * diff[1];
+                accel3[3 * i + 2] += masses[j] * aux * diff[2];
             }
         }
     }
