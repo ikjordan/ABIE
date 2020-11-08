@@ -25,7 +25,7 @@ all integrators should now work in both `ctypes` (where implemented) and `numpy`
 2. Issues surrounding division that broke execution when using Python 3 have been corrected
 3. Some C arrays were declared on the stack. This caused stack overflows with large particle simulations. 
 Heap memory is now used instead
-4. Addressed issues with timestep and energy delta calculations in the `Wisdom Holman` integrator. 
+4. Addressed issues with timestep and energy delta calculations in the `Wisdom-Holman` integrator. 
 Accelerated the calculation of energy delta by adding a C function called via `ctypes`. This function is also used when displaying energy delta graphs created from `.h5` files
 5. The package configuration has been modified, so that code can be called in the same way, regardless
 of whether the `astroabie` package has been installed. Examples have been moved into a separate
@@ -146,7 +146,7 @@ Based on the example in chapter 10.
 A simulation comprising the Sun, Neptune and a large number of small Kuiper belt like objects. The simulation shows some
 of the the objects falling into resonance with Neptune. See e.g. https://en.wikipedia.org/wiki/Resonant_trans-Neptunian_object
 
-Illustrates the use of CUDA, OpenCL and OpenMP in more demanding simulations. Switch from Wisom-Holman to Gauss-Radau 15 to enable CUDA or OpenCL
+Illustrates the use of CUDA, OpenCL and OpenMP in more demanding simulations. Switch from Wisdom-Holman to Gauss-Radau15 to enable CUDA or OpenCL
 
 #### `display.py`
 Helper class to display multiple graphs using `matplotlib`  
