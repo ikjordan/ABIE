@@ -42,7 +42,7 @@ def main():
         print("Usage: source2string -i infile outfile")
         exit(2)
 
-    # Use just the filename for the 
+    # Use just the filename for the variable name
     with open(sys.argv[2], "rb") as infile:
         with open(sys.argv[3], "w") as outfile:
 

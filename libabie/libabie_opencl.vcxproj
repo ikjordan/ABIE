@@ -110,7 +110,7 @@
       <Message>Copy to the python source directory</Message>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>set PYTHONIOENCODING=mbcs;python  ..\source2string.py -i ..\libabie\force_kernel.cl ..\libabie\kernel_string.h</Command>
+      <Command>python $(SolutionDir)source2string.py -i $(ProjectDir)force_kernel.cl $(ProjectDir)kernel_string.h</Command>
     </PreBuildEvent>
     <PreBuildEvent>
       <Message>Stringify Kernel</Message>
@@ -147,7 +147,7 @@
       <Message>Copy to the python source directory</Message>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>set PYTHONIOENCODING=mbcs;python  ..\source2string.py -i ..\libabie\force_kernel.cl ..\libabie\kernel_string.h</Command>
+      <Command>python $(SolutionDir)source2string.py -i $(ProjectDir)force_kernel.cl $(ProjectDir)kernel_string.h</Command>
     </PreBuildEvent>
     <PreBuildEvent>
       <Message>Stringify Kernel</Message>
@@ -180,7 +180,7 @@
       <Message>Copy to the python source directory</Message>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>set PYTHONIOENCODING=mbcs;python  ..\source2string.py -i ..\libabie\force_kernel.cl ..\libabie\kernel_string.h</Command>
+      <Command>python $(SolutionDir)source2string.py -i $(ProjectDir)force_kernel.cl $(ProjectDir)kernel_string.h</Command>
     </PreBuildEvent>
     <PreBuildEvent>
       <Message>Stringify Kernel</Message>
@@ -218,7 +218,7 @@
       <Message>Copy to the python source directory</Message>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>set PYTHONIOENCODING=mbcs;python  ..\source2string.py -i ..\libabie\force_kernel.cl ..\libabie\kernel_string.h</Command>
+      <Command>python $(SolutionDir)source2string.py -i $(ProjectDir)force_kernel.cl $(ProjectDir)kernel_string.h</Command>
     </PreBuildEvent>
     <PreBuildEvent>
       <Message>Stringify Kernel</Message>
