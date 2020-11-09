@@ -16,7 +16,6 @@
 #include <CL/cl_ext.h>
 #include "common.h"
 
-#define MAX_SOURCE_SIZE 0x10000
 #define MAX_PLATFORMS 4
 
 static cl_mem pos_dev = NULL;
@@ -171,22 +170,45 @@ void opencl_build(void)
         check_ret("clCreateCommandQueue", ret);
 
         // Load the kernel source code into the array source_str
-        char* source_str;
-        size_t source_size;
+        char* source_str = 0;
+        size_t source_size = 0;
 
 #ifdef LOAD_KERNEL_FROM_STRING
         source_str = VAR_NAME;
         source_size = VAR_LENGTH;
 #else
-        FILE* fp = fopen(FILE_NAME, "r");
+        // Open in binary mode, so length can be determined
+        FILE* fp = fopen(FILE_NAME, "rb");
         if (!fp)
         {
             fprintf(stderr, "Failed to load kernel. %s\n", FILE_NAME);
             exit(0);
         }
 
-        source_str = (char*)malloc(MAX_SOURCE_SIZE);
-        source_size = fread(source_str, 1, MAX_SOURCE_SIZE, fp);
+        // Find length of file
+        if (fseek(fp, 0L, SEEK_END))
+        {
+            fprintf(stderr, "Failed to fseek\n");
+            exit(0);
+        }
+
+        source_size = ftell(fp);
+
+        if (source_size == -1)
+        {
+            fprintf(stderr, "Failed to ftell\n");
+            exit(0);
+        }
+
+        if (fseek(fp, 0L, SEEK_SET))
+        {
+            fprintf(stderr, "Failed to fseek\n");
+            exit(0);
+        }
+
+        // Allocate memory and read the file
+        source_str = (char*)malloc(source_size);
+        source_size = fread(source_str, 1, source_size, fp);
         fclose(fp);
 #endif
         // Create a program from the kernel source

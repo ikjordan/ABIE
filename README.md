@@ -45,7 +45,7 @@ comment out `USE_SHARED` from `common.h`
 Note that the CUDA implementation has only been tested under Windows
 11. A third MSVC solution, `ABIE_OpenCL`, supports OpenCL. The OpenCL version uses shared local memory and 
 executes at a similar speed to the shared memory CUDA implementation.
-It has also been tested on Intel and AMD graphics cards, and under Linux.  
+The OpenCL implementation has been tested using NVidia, AMD and Intel graphics cards. It has been run on Windows and Linux.  
 For reference, an OpenCL global memory version is also provided and can be selected by removing `USE_SHARED` from `common.h`   
 OpenCL is enabled when the `OPENCL` preprocessor directive is added
 12. ABIE uses C Variable Length Arrays (VLA), which are not supported by the MSVC compiler (MSVC is not
